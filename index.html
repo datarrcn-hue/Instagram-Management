@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Analisis Reel Instagram</title>
+<title>Instagram AI Assistant</title>
 
 <!-- SheetJS untuk baca XLSX -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -26,6 +26,7 @@
     --bronze: #d97706;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -69,7 +70,7 @@
     color: var(--muted);
     font-weight: 500;
   }
-  input[type="text"], input[type="password"], textarea, select {
+  input, textarea, select {
     width: 100%;
     background: var(--card-2);
     border: 1px solid var(--border);
@@ -82,7 +83,63 @@
     transition: border-color 0.15s;
   }
   input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 90px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+  .field { margin-bottom: 14px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
+  button {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  button:hover:not(:disabled) { transform: translateY(-1px); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    padding: 8px 14px;
+    width: auto;
+    margin-right: 8px;
+  }
+
+  .btn-generate {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    font-size: 12px;
+    padding: 8px 14px;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-generate:hover:not(:disabled) { transform: translateY(-1px); }
+
+  .status {
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
+  .status.ok { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+  .status.err { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+  .result { display: none; }
+  .result.show { display: block; }
+
+  /* File drop */
   .file-drop {
     border: 2px dashed var(--border);
     border-radius: 12px;
@@ -128,44 +185,7 @@
   }
   .file-info.show { display: block; }
 
-  button {
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    transition: transform 0.1s, opacity 0.15s;
-  }
-  button:hover:not(:disabled) { transform: translateY(-1px); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-secondary {
-    background: var(--card-2);
-    border: 1px solid var(--border);
-    font-size: 13px;
-    padding: 8px 14px;
-    width: auto;
-    margin-right: 8px;
-  }
-
-  .status {
-    padding: 12px 14px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 14px;
-    display: none;
-  }
-  .status.show { display: block; }
-  .status.info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
-  .status.ok { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
-  .status.err { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
-
-  .result { display: none; }
-  .result.show { display: block; }
-
+  /* Stats */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -213,6 +233,7 @@
     font-weight: 700;
   }
 
+  /* Reel cards */
   .reel-card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -283,6 +304,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
     gap: 10px;
+    margin-bottom: 12px;
   }
   .metric {
     text-align: center;
@@ -294,15 +316,148 @@
   .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
   .metric-value.highlight { color: var(--ok); }
 
-  .insight-box {
+  .reel-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  /* Ideas */
+  .idea {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .idea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .idea-title { font-size: 17px; font-weight: 700; margin: 0; }
+  .idea-num {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .block { margin-bottom: 16px; }
+  .block:last-child { margin-bottom: 0; }
+  .block-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .block-content {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+  }
+  .block-content.caption { font-family: inherit; }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    width: auto;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--text); }
+  .copy-btn.copied { border-color: var(--ok); color: var(--ok); }
+
+  .hashtags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .hashtag {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #c4b5fd;
+  }
+
+  .trend-summary {
     background: var(--card-2);
     border-left: 3px solid var(--accent);
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .insight-box {
+    background: var(--card-2);
+    border-left: 3px solid #fbbf24;
     padding: 14px 16px;
     border-radius: 8px;
     margin-bottom: 16px;
     font-size: 14px;
     line-height: 1.6;
     white-space: pre-wrap;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+    background: none;
+    width: auto;
+    border-radius: 0;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+    background: none;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   table {
@@ -354,105 +509,231 @@
   }
   details[open] summary { color: var(--text); }
 
-  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s;
+    max-width: 90vw;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast.ok { border-color: var(--ok); color: #86efac; }
+  .toast.err { border-color: var(--err); color: #fca5a5; }
+  .toast.info { border-color: #3b82f6; color: #93c5fd; }
 </style>
 </head>
 <body>
 <div class="container">
 
   <header>
-    <h1>📊 Analisis Reel Instagram</h1>
-    <p>Upload CSV / XLSX → Ranking otomatis → Insight dari AI</p>
+    <h1>🤖 Instagram AI Assistant</h1>
+    <p>Upload data → Analisis Reel → Generate Konten otomatis</p>
   </header>
 
-  <!-- STEP 1 -->
-  <div class="card">
-    <h2>1️⃣ Upload File Data</h2>
-    <div class="file-drop" id="fileDrop">
-      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt,.tsv" />
-      <div class="file-drop-icon">📁</div>
-      <div class="file-drop-text">
-        <strong>Klik untuk pilih file</strong> atau drag & drop di sini<br>
-        <small>Format yang didukung:</small>
-      </div>
-      <div class="file-drop-formats">
-        <span class="format-badge">CSV</span>
-        <span class="format-badge">XLSX</span>
-        <span class="format-badge">XLS</span>
-        <span class="format-badge">TXT</span>
-        <span class="format-badge">TSV</span>
-      </div>
-    </div>
-    <div class="file-info" id="fileInfo"></div>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="analisis">📊 Analisis Reel</button>
+    <button class="tab" data-tab="generate">✨ Generate Konten</button>
   </div>
 
-  <!-- STEP 2 -->
-  <div class="card">
-    <h2>2️⃣ Groq API Key (opsional, untuk insight AI)</h2>
-    <div>
-      <label>Groq API Key</label>
-      <input type="password" id="apiKey" placeholder="gsk_..." />
-      <div class="hint">
-        Dapat gratis di <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.
-        Kalau kosong, analisis tetap jalan tapi tanpa insight AI.
-      </div>
-    </div>
-  </div>
+  <!-- ============================================ -->
+  <!-- TAB 1: ANALISIS -->
+  <!-- ============================================ -->
+  <div class="tab-content active" id="tab-analisis">
 
-  <!-- STEP 3 -->
-  <button id="analyzeBtn" disabled>🔍 Analisis Sekarang</button>
-
-  <div style="margin-top: 14px;"></div>
-  <div class="status" id="status"></div>
-
-  <!-- HASIL -->
-  <div class="result" id="result">
+    <!-- API KEY -->
     <div class="card">
-      <h2>📈 Statistik Keseluruhan</h2>
-      <div class="stats-grid" id="statsGrid"></div>
-    </div>
-
-    <div class="section-title">
-      🏆 Top 5 Reel untuk Observasi Manual
-      <span class="badge">KLIK LANGSUNG</span>
-    </div>
-    <div id="top5"></div>
-
-    <div class="card" id="insightCard" style="display:none;">
-      <h2>🧠 Insight dari Groq AI</h2>
-      <div class="insight-box" id="insightBox"></div>
-    </div>
-
-    <details>
-      <summary>📋 Lihat Ranking Lengkap Semua Reel (<span id="totalCount">0</span> Reel)</summary>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>URL Reel</th>
-              <th style="text-align:right;">Views</th>
-              <th style="text-align:right;">Likes</th>
-              <th style="text-align:right;">Comments</th>
-              <th style="text-align:right;">Eng. Rate</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
+      <h2>🔑 Groq API Key</h2>
+      <div class="field">
+        <label>Groq API Key</label>
+        <input type="password" id="apiKey" placeholder="gsk_..." />
+        <div class="hint">
+          Dapatkan gratis di
+          <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.
+          Dipakai untuk analisis AI & generate konten.
+        </div>
       </div>
-    </details>
+    </div>
 
-    <div style="margin-top: 20px; display: flex; gap: 8px; flex-wrap: wrap;">
-      <button class="btn-secondary" id="downloadBtn">💾 Download Hasil JSON</button>
-      <button class="btn-secondary" id="copyTop5Btn">📋 Copy 5 URL Top</button>
+    <!-- UPLOAD -->
+    <div class="card">
+      <h2>1️⃣ Upload File Data Scrape</h2>
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt,.tsv" />
+        <div class="file-drop-icon">📁</div>
+        <div class="file-drop-text">
+          <strong>Klik untuk pilih file</strong> atau drag & drop di sini<br>
+          <small>Format yang didukung:</small>
+        </div>
+        <div class="file-drop-formats">
+          <span class="format-badge">CSV</span>
+          <span class="format-badge">XLSX</span>
+          <span class="format-badge">XLS</span>
+          <span class="format-badge">TXT</span>
+          <span class="format-badge">TSV</span>
+        </div>
+      </div>
+      <div class="file-info" id="fileInfo"></div>
+    </div>
+
+    <!-- PROFIL KONTEN -->
+    <div class="card">
+      <h2>⚙️ Profil Konten</h2>
+      <div class="row">
+        <div class="field">
+          <label>Niche / Kategori</label>
+          <input type="text" id="niche" value="Kuliner rumahan / masakan sehari-hari" />
+        </div>
+        <div class="field">
+          <label>Bahasa Konten</label>
+          <select id="language">
+            <option value="Bahasa Indonesia" selected>Bahasa Indonesia</option>
+            <option value="English">English</option>
+            <option value="Bahasa Indonesia + English mix">Indonesia + English mix</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tone / Gaya Bahasa</label>
+        <input type="text" id="tone" value="Santai, hangat, cocok untuk keluarga muda" />
+      </div>
+      <div class="field">
+        <label>Hashtag target (pisah koma)</label>
+        <input type="text" id="hashtags" value="reseprumahan, masakansederhana, resepmudah, masakanindonesia" />
+      </div>
+    </div>
+
+    <!-- ANALYZE -->
+    <button id="analyzeBtn" disabled>🔍 Analisis Sekarang</button>
+    <div style="margin-top: 14px;"></div>
+    <div class="status" id="statusAnalyze"></div>
+
+    <!-- HASIL ANALISIS -->
+    <div class="result" id="analyzeResult">
+      <div class="card">
+        <h2>📈 Statistik Keseluruhan</h2>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+
+      <div class="section-title">
+        🏆 Top 5 Reel untuk Observasi
+        <span class="badge">KLIK & BUAT KONTEN</span>
+      </div>
+      <p style="font-size:13px; color:var(--muted); margin:0 0 14px;">
+        Klik <strong>Buat Konten dari Reel Ini</strong> untuk langsung generate ide konten baru berdasarkan Reel yang berhasil.
+      </p>
+      <div id="top5"></div>
+
+      <div class="card" id="insightCard" style="display:none;">
+        <h2>🧠 Insight dari Groq AI</h2>
+        <div class="insight-box" id="insightBox"></div>
+      </div>
+
+      <details>
+        <summary>📋 Lihat Ranking Lengkap Semua Reel (<span id="totalCount">0</span> Reel)</summary>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>URL Reel</th>
+                <th style="text-align:right;">Views</th>
+                <th style="text-align:right;">Likes</th>
+                <th style="text-align:right;">Comments</th>
+                <th style="text-align:right;">Eng. Rate</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </details>
+
+      <div style="margin-top: 20px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-secondary" id="downloadAnalysisBtn">💾 Download Hasil JSON</button>
+        <button class="btn-secondary" id="copyTop5Btn">📋 Copy 5 URL Top</button>
+        <button class="btn-secondary" id="generateAllBtn" style="border-color:#22c55e;color:#86efac;">
+          ✨ Generate Konten dari Semua Top 5
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================ -->
+  <!-- TAB 2: GENERATE KONTEN -->
+  <!-- ============================================ -->
+  <div class="tab-content" id="tab-generate">
+    <div class="card">
+      <h2>✨ Generate Konten Baru</h2>
+      <div class="field">
+        <label>Sumber Inspirasi</label>
+        <select id="sourceMode">
+          <option value="manual">Manual (isi sendiri di bawah)</option>
+          <option value="from-reel">Dari Reel Top (pilih dari hasil analisis)</option>
+          <option value="from-all">Dari semua Top 5 Reel</option>
+        </select>
+        <div class="hint" id="sourceHint">
+          Pilih mode. Kalau "Dari Reel Top", klik tombol di kartu Reel pada tab Analisis.
+        </div>
+      </div>
+
+      <div id="reelInfoBox" style="display:none; background:var(--card-2); padding:12px; border-radius:8px; margin-bottom:14px; font-size:13px;">
+        <strong>📎 Referensi Reel:</strong>
+        <div id="reelInfoText" style="color:var(--muted); margin-top:4px;"></div>
+      </div>
+
+      <div class="field">
+        <label>Contoh caption viral (paste dari Instagram — 3-10 caption, pisah baris baru)</label>
+        <textarea id="sampleCaptions" placeholder="Contoh:
+5 resep ayam yang gampang dan murah
+POV: anak kos masak sendiri tanpa ribet
+Bumbu dasar yang wajib ada di dapur"></textarea>
+        <div class="hint">
+          Tips: buka Instagram → cari hashtag target → copy 5-10 caption teratas → paste di sini.
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Instruksi tambahan (opsional)</label>
+        <input type="text" id="extraInstruction" placeholder="Contoh: fokus ke resep murah, target anak kos" />
+      </div>
+    </div>
+
+    <button id="generateBtn">✨ Generate Konten</button>
+    <div style="margin-top: 14px;"></div>
+    <div class="status" id="statusGenerate"></div>
+
+    <div class="result" id="generateResult">
+      <div class="card">
+        <h2>📈 Ringkasan Tren</h2>
+        <div class="trend-summary" id="trendSummary"></div>
+      </div>
+      <h2 style="font-size:15px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px;">💡 Ide Konten</h2>
+      <div id="ideas"></div>
+      <button class="btn-secondary" id="downloadContentBtn" style="width:100%; padding:12px;">💾 Download Semua Hasil (.json)</button>
     </div>
   </div>
 
   <div class="footer">
-    Analisis Reel Instagram • 100% client-side • Data tidak dikirim ke mana pun kecuali Groq (opsional)
+    Instagram AI Assistant • Powered by Groq (openai/gpt-oss-120b) • 100% client-side
   </div>
 
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 // ============================================================
@@ -465,56 +746,136 @@ const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 // ELEMEN
 // ============================================================
 const $ = (id) => document.getElementById(id);
+const apiKeyEl = $("apiKey");
+const nicheEl = $("niche");
+const languageEl = $("language");
+const toneEl = $("tone");
+const hashtagsEl = $("hashtags");
+const sourceModeEl = $("sourceMode");
+const sourceHintEl = $("sourceHint");
+const reelInfoBox = $("reelInfoBox");
+const reelInfoText = $("reelInfoText");
+const sampleCaptionsEl = $("sampleCaptions");
+const extraInstructionEl = $("extraInstruction");
+
+// Analysis
 const fileDrop = $("fileDrop");
 const fileInput = $("fileInput");
 const fileInfo = $("fileInfo");
-const apiKeyEl = $("apiKey");
 const analyzeBtn = $("analyzeBtn");
-const statusEl = $("status");
-const resultEl = $("result");
+const statusAnalyze = $("statusAnalyze");
+const analyzeResult = $("analyzeResult");
 const statsGrid = $("statsGrid");
 const top5El = $("top5");
 const insightCard = $("insightCard");
 const insightBox = $("insightBox");
 const tableBody = $("tableBody");
 const totalCount = $("totalCount");
-const downloadBtn = $("downloadBtn");
+const downloadAnalysisBtn = $("downloadAnalysisBtn");
 const copyTop5Btn = $("copyTop5Btn");
+const generateAllBtn = $("generateAllBtn");
 
-// Simpan API key
+// Generate
+const generateBtn = $("generateBtn");
+const statusGenerate = $("statusGenerate");
+const generateResult = $("generateResult");
+const trendSummaryEl = $("trendSummary");
+const ideasEl = $("ideas");
+const downloadContentBtn = $("downloadContentBtn");
+
+// ============================================================
+// STATE
+// ============================================================
+let parsedData = [];
+let analysisResult = null;
+let lastContentResult = null;
+let currentFileName = "";
+let selectedReel = null;
+let currentSourceReels = [];
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const target = tab.dataset.tab;
+    document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(`tab-${target}`).classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+});
+
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach((t) => {
+    if (t.dataset.tab === name) t.click();
+  });
+}
+
+// ============================================================
+// API KEY
+// ============================================================
 const savedKey = localStorage.getItem("groq_api_key");
 if (savedKey) apiKeyEl.value = savedKey;
 apiKeyEl.addEventListener("input", () => {
   localStorage.setItem("groq_api_key", apiKeyEl.value.trim());
 });
 
-// State
-let parsedData = [];
-let analysisResult = null;
-let currentFileName = "";
-
 // ============================================================
-// HELPER: status
+// TOAST
 // ============================================================
-function showStatus(msg, type = "info", spinner = false) {
-  statusEl.className = `status show ${type}`;
-  statusEl.innerHTML = (spinner ? '<span class="spinner"></span>' : "") + msg;
-}
-function hideStatus() {
-  statusEl.className = "status";
-  statusEl.innerHTML = "";
+function showToast(msg, type = "info") {
+  const toast = $("toast");
+  toast.textContent = msg;
+  toast.className = `toast show ${type}`;
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 3000);
 }
 
 // ============================================================
-// HELPER: parse angka
+// STATUS HELPERS
+// ============================================================
+function showStatus(el, msg, type = "info", spinner = false) {
+  el.className = `status show ${type}`;
+  el.innerHTML = (spinner ? '<span class="spinner"></span>' : "") + msg;
+}
+function hideStatus(el) {
+  el.className = "status";
+  el.innerHTML = "";
+}
+
+// ============================================================
+// COPY
+// ============================================================
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "✓ Tersalin";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove("copied");
+    }, 1500);
+  }).catch(() => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    btn.textContent = "✓ Tersalin";
+    setTimeout(() => (btn.textContent = "Copy"), 1500);
+  });
+}
+
+// ============================================================
+// PARSE NUMBER
 // ============================================================
 function parseNumber(val) {
   if (val === undefined || val === null) return 0;
-
-  if (typeof val === "number") {
-    if (!isFinite(val)) return 0;
-    return Math.round(val);
-  }
+  if (typeof val === "number") return isFinite(val) ? Math.round(val) : 0;
 
   let s = String(val).trim().replace(/,/g, "");
   if (s === "" || s === "-") return 0;
@@ -528,12 +889,11 @@ function parseNumber(val) {
   const num = parseFloat(match[1]);
   const suffix = match[2].toUpperCase();
   const multiplier = suffix === "K" ? 1e3 : suffix === "M" ? 1e6 : suffix === "B" ? 1e9 : 1;
-
   return Math.round(num * multiplier);
 }
 
 // ============================================================
-// HELPER: ekstrak shortcode dari URL / string apapun
+// EXTRACT SHORTCODE
 // ============================================================
 function extractShortcode(str) {
   if (!str) return null;
@@ -550,7 +910,7 @@ function extractShortcode(str) {
 }
 
 // ============================================================
-// PARSE: dari array-of-arrays
+// PARSE ROWS
 // ============================================================
 function parseRows(rows) {
   if (!rows || rows.length === 0) return [];
@@ -584,10 +944,8 @@ function parseRows(rows) {
     for (let i = startRow; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
-
       const shortcode = extractShortcode(row[urlIdx]);
       if (!shortcode || seen.has(shortcode)) continue;
-
       seen.add(shortcode);
       results.push({
         shortcode,
@@ -601,20 +959,15 @@ function parseRows(rows) {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
-
       for (let j = 0; j < row.length; j++) {
         const cell = row[j];
         if (cell === undefined || cell === null) continue;
-
         const shortcode = extractShortcode(cell);
         if (!shortcode || seen.has(shortcode)) continue;
-
         const likes = parseNumber(row[j + 1]);
         const comments = parseNumber(row[j + 2]);
         const views = parseNumber(row[j + 3]);
-
         if (likes === 0 && comments === 0 && views === 0) continue;
-
         seen.add(shortcode);
         results.push({
           shortcode,
@@ -631,41 +984,31 @@ function parseRows(rows) {
 }
 
 // ============================================================
-// HANDLE FILE
+// FILE UPLOAD
 // ============================================================
 fileDrop.addEventListener("click", () => fileInput.click());
-
 fileDrop.addEventListener("dragover", (e) => {
   e.preventDefault();
   fileDrop.classList.add("dragover");
 });
-fileDrop.addEventListener("dragleave", () => {
-  fileDrop.classList.remove("dragover");
-});
+fileDrop.addEventListener("dragleave", () => fileDrop.classList.remove("dragover"));
 fileDrop.addEventListener("drop", (e) => {
   e.preventDefault();
   fileDrop.classList.remove("dragover");
-  if (e.dataTransfer.files.length > 0) {
-    handleFile(e.dataTransfer.files[0]);
-  }
+  if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
 });
-
 fileInput.addEventListener("change", (e) => {
-  if (e.target.files.length > 0) {
-    handleFile(e.target.files[0]);
-  }
+  if (e.target.files.length > 0) handleFile(e.target.files[0]);
 });
 
 function handleFile(file) {
   currentFileName = file.name;
   const ext = file.name.split(".").pop().toLowerCase();
-
   const reader = new FileReader();
 
   reader.onload = (e) => {
     try {
       let rows = [];
-
       if (ext === "xlsx" || ext === "xls") {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
@@ -707,11 +1050,8 @@ function handleFile(file) {
     }
   };
 
-  if (ext === "xlsx" || ext === "xls") {
-    reader.readAsArrayBuffer(file);
-  } else {
-    reader.readAsText(file);
-  }
+  if (ext === "xlsx" || ext === "xls") reader.readAsArrayBuffer(file);
+  else reader.readAsText(file);
 }
 
 // ============================================================
@@ -742,15 +1082,10 @@ function analyzeData(data) {
       totalComments,
       avgViews: Math.round(avgViews),
       avgEngRate: +avgEngRate.toFixed(2),
-      topViews: enriched[0]?.views || 0,
-      topEngRate: Math.max(...enriched.map((d) => d.engRate)),
     },
   };
 }
 
-// ============================================================
-// FORMAT ANGKA
-// ============================================================
 function formatNum(n) {
   if (n >= 1e9) return (n / 1e9).toFixed(1) + "B";
   if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
@@ -759,7 +1094,7 @@ function formatNum(n) {
 }
 
 // ============================================================
-// RENDER
+// RENDER HASIL ANALISIS
 // ============================================================
 function renderStats(stats) {
   const items = [
@@ -795,7 +1130,7 @@ function renderTop5(reels) {
           <span class="rank-badge ${badgeClass}">${medals[i]} RANK #${i + 1}</span>
           <div class="reel-header">
             <a href="${r.url}" target="_blank" rel="noopener" class="reel-url">${r.url}</a>
-            <a href="${r.url}" target="_blank" rel="noopener" class="open-btn">🔗 Buka di Instagram</a>
+            <a href="${r.url}" target="_blank" rel="noopener" class="open-btn">🔗 Buka</a>
           </div>
           <div class="reel-metrics">
             <div class="metric">
@@ -815,9 +1150,22 @@ function renderTop5(reels) {
               <div class="metric-label">Eng. Rate</div>
             </div>
           </div>
+          <div class="reel-actions">
+            <button class="btn-generate" data-reel='${JSON.stringify(r).replace(/'/g, "&apos;")}'>
+              ✨ Buat Konten dari Reel Ini
+            </button>
+          </div>
         </div>`;
     })
     .join("");
+
+  // Attach event listeners
+  top5El.querySelectorAll(".btn-generate").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const reel = JSON.parse(btn.dataset.reel.replace(/&apos;/g, "'"));
+      generateFromReels([reel]);
+    });
+  });
 }
 
 function renderTable(reels) {
@@ -832,9 +1180,17 @@ function renderTable(reels) {
         <td class="num">${formatNum(r.likes)}</td>
         <td class="num">${formatNum(r.comments)}</td>
         <td class="num">${r.engRate}%</td>
+        <td><button class="copy-btn" data-reel='${JSON.stringify(r).replace(/'/g, "&apos;")}'>✨ Konten</button></td>
       </tr>`
     )
     .join("");
+
+  tableBody.querySelectorAll(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const reel = JSON.parse(btn.dataset.reel.replace(/&apos;/g, "'"));
+      generateFromReels([reel]);
+    });
+  });
 }
 
 // ============================================================
@@ -864,20 +1220,109 @@ BOTTOM 5 REEL (performa terlemah):
 ${bottom5.map(formatReel).join("\n")}
 
 TUGAS:
-Berikan analisis dalam Bahasa Indonesia, dengan format:
+Berikan analisis dalam Bahasa Indonesia, ringkas (max 400 kata):
 
 1. **Pola Konten Terbaik**: Apa yang membuat 5 Reel teratas berhasil?
+2. **Rekomendasi Formula**: Formula konten apa yang sebaiknya direplikasi?
+3. **Yang Harus Dihindari**: Pola dari 5 Reel terbawah.
+4. **Prediksi Konten Selanjutnya**: 3 ide konten konkret.
+5. **Catatan**: Data ini tidak memuat caption/hashtag asli. 3 hal yang perlu dicek manual.
 
-2. **Rekomendasi Formula**: Berdasarkan data ini, formula konten seperti apa yang sebaiknya direplikasi?
+Balas dalam Bahasa Indonesia, format markdown sederhana.`;
 
-3. **Yang Harus Dihindari**: Apa pola dari 5 Reel terbawah?
+  const response = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        { role: "system", content: "Kamu analis konten Instagram. Jawab ringkas dalam Bahasa Indonesia." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    }),
+  });
 
-4. **Prediksi Konten Selanjutnya**: 3 ide konten konkret yang kemungkinan akan performa baik.
+  if (!response.ok) {
+    let errMsg = `HTTP ${response.status}`;
+    try { const err = await response.json(); errMsg = err?.error?.message || errMsg; } catch (_) {}
+    throw new Error(errMsg);
+  }
 
-5. **Catatan Penting**: Data ini TIDAK memuat caption/hashtag asli. Sarankan 3 hal konkret yang user perlu cek manual di Reel teratas.
+  const data = await response.json();
+  return data?.choices?.[0]?.message?.content || "(tidak ada balasan)";
+}
 
-Balas dalam Bahasa Indonesia, ringkas, maksimal 500 kata.`;
+// ============================================================
+// BUILD PROMPT
+// ============================================================
+function buildPrompt(sampleCaptions, extraInstruction) {
+  const niche = nicheEl.value.trim();
+  const language = languageEl.value.trim();
+  const tone = toneEl.value.trim();
+  const hashtags = hashtagsEl.value.trim();
 
+  const sampleSection = sampleCaptions
+    ? `\nContoh caption viral:\n${sampleCaptions.split("\n").filter((l) => l.trim()).map((l, i) => `${i + 1}. ${l.trim()}`).join("\n")}`
+    : "\n(Tidak ada contoh caption — gunakan pengetahuanmu tentang tren Instagram terkini.)";
+
+  const extra = extraInstruction ? `\nInstruksi tambahan: ${extraInstruction}` : "";
+
+  const reelSection = currentSourceReels.length > 0
+    ? `\nREFERENSI REEL YANG BERHASIL (untuk dijadikan inspirasi konten baru):\n${currentSourceReels.map((r, i) => `Reel #${i + 1}: ${r.url}\n  Views: ${formatNum(r.views)}, Likes: ${formatNum(r.likes)}, Comments: ${formatNum(r.comments)}, Eng. Rate: ${r.engRate}%`).join("\n")}\n\nAnalisis pola dari Reel-Reel ini dan buat konten BARU yang mengikuti pola tersebut tapi dengan angle berbeda.`
+    : "";
+
+  return `Kamu adalah content strategist Instagram profesional.
+
+Profil akun saya:
+- Niche: ${niche}
+- Tone: ${tone}
+- Bahasa konten: ${language}
+- Hashtag target: ${hashtags}
+${sampleSection}${extra}
+${reelSection}
+
+Tugas kamu:
+
+1. Ringkas tren (3-5 kalimat): berdasarkan data di atas, jelaskan pola konten yang sedang viral.
+
+2. Buat 3 ide konten Instagram siap posting. Setiap ide:
+   - title: Judul dalam ${language}, singkat menarik (max 60 char)
+   - caption: Caption lengkap ${language}, dengan emoji, max 200 kata, HOOK kuat di awal, CTA di akhir
+   - image_prompt_for_gemini: Prompt BAHASA INGGRIS, WAJIB fotorealistik seperti hasil foto kamera profesional (DSLR/mirrorless), BUKAN ilustrasi/kartun/3D/AI-art. Sertakan:
+       * Subjek konkret
+       * Kamera & lensa (contoh: "Sony A7 IV, 35mm f/1.4")
+       * Setting (f/2.0, ISO 200, 1/250s)
+       * Pencahayaan natural
+       * Komposisi (rule of thirds, shallow depth of field)
+       * Mood & color grading
+       * Aspect ratio 4:5 atau 1:1
+       * Tag akhir: "photorealistic, ultra-detailed, natural skin texture, shot on real camera, 8k, high resolution"
+   - hashtags: 8-12 tag (campur besar + niche), tanpa simbol #
+
+WAJIB balas HANYA JSON valid:
+
+{
+  "trend_summary": "string",
+  "content_ideas": [
+    {
+      "title": "string",
+      "caption": "string",
+      "image_prompt_for_gemini": "string",
+      "hashtags": ["string"]
+    }
+  ]
+}`;
+}
+
+// ============================================================
+// CALL GROQ
+// ============================================================
+async function callGroq(apiKey, prompt) {
   const response = await fetch(GROQ_URL, {
     method: "POST",
     headers: {
@@ -889,26 +1334,156 @@ Balas dalam Bahasa Indonesia, ringkas, maksimal 500 kata.`;
       messages: [
         {
           role: "system",
-          content: "Kamu adalah analis konten Instagram. Jawab dalam Bahasa Indonesia, ringkas, praktis.",
+          content:
+            "Kamu content strategist Instagram & expert fotografi. Selalu balas JSON valid tanpa teks lain. Setiap 'image_prompt_for_gemini' WAJIB fotorealistik seperti foto kamera profesional (DSLR/mirrorless) dengan detail kamera, lensa, pencahayaan natural, komposisi, color grading. JANGAN pernah saran gaya ilustrasi/kartun/3D/AI-art.",
         },
         { role: "user", content: prompt },
       ],
-      temperature: 0.7,
-      max_tokens: 2000,
+      temperature: 0.9,
+      max_tokens: 4096,
+      response_format: { type: "json_object" },
     }),
   });
 
   if (!response.ok) {
     let errMsg = `HTTP ${response.status}`;
-    try {
-      const err = await response.json();
-      errMsg = err?.error?.message || errMsg;
-    } catch (_) {}
+    try { const err = await response.json(); errMsg = err?.error?.message || errMsg; } catch (_) {}
     throw new Error(errMsg);
   }
 
   const data = await response.json();
-  return data?.choices?.[0]?.message?.content || "(tidak ada balasan)";
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("Groq tidak mengembalikan teks.");
+  return text;
+}
+
+// ============================================================
+// PARSE JSON
+// ============================================================
+function parseGroqJson(raw) {
+  let cleaned = raw.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
+  }
+  try { return JSON.parse(cleaned); }
+  catch (_) {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+    throw new Error("Gagal membaca format JSON dari Groq.");
+  }
+}
+
+// ============================================================
+// RENDER HASIL GENERATE
+// ============================================================
+function renderContentResult(result) {
+  lastContentResult = result;
+  trendSummaryEl.textContent = result.trend_summary || "(tidak ada ringkasan)";
+  ideasEl.innerHTML = "";
+
+  (result.content_ideas || []).forEach((idea, idx) => {
+    const ideaDiv = document.createElement("div");
+    ideaDiv.className = "idea";
+
+    const hashtagsHtml = (idea.hashtags || [])
+      .map((t) => `<span class="hashtag">#${String(t).replace(/^#/, "")}</span>`)
+      .join("");
+
+    ideaDiv.innerHTML = `
+      <div class="idea-header">
+        <h3 class="idea-title">${escapeHtml(idea.title || `Ide ${idx + 1}`)}</h3>
+        <span class="idea-num">IDE #${idx + 1}</span>
+      </div>
+
+      <div class="block">
+        <div class="block-label">
+          <span>📝 Caption</span>
+          <button class="copy-btn" data-copy="${idx}-caption">Copy</button>
+        </div>
+        <div class="block-content caption">${escapeHtml(idea.caption || "")}</div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">
+          <span>🎨 Image Prompt (fotorealistik)</span>
+          <button class="copy-btn" data-copy="${idx}-prompt">Copy</button>
+        </div>
+        <div class="block-content">${escapeHtml(idea.image_prompt_for_gemini || "")}</div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">
+          <span>#️⃣ Hashtags</span>
+          <button class="copy-btn" data-copy="${idx}-tags">Copy</button>
+        </div>
+        <div class="hashtags">${hashtagsHtml}</div>
+      </div>
+    `;
+
+    ideasEl.appendChild(ideaDiv);
+  });
+
+  ideasEl.querySelectorAll(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.copy;
+      const [idx, type] = key.split("-");
+      const idea = lastContentResult.content_ideas[parseInt(idx)];
+      let text = "";
+      if (type === "caption") text = idea.caption || "";
+      else if (type === "prompt") text = idea.image_prompt_for_gemini || "";
+      else if (type === "tags")
+        text = (idea.hashtags || []).map((t) => "#" + String(t).replace(/^#/, "")).join(" ");
+      copyToClipboard(text, btn);
+    });
+  });
+
+  generateResult.classList.add("show");
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ============================================================
+// GENERATE FROM REELS (dipanggil dari kartu Top 5)
+// ============================================================
+function generateFromReels(reels) {
+  currentSourceReels = reels;
+
+  // Pindah ke tab Generate
+  switchTab("generate");
+
+  // Isi info
+  reelInfoBox.style.display = "block";
+  sourceModeEl.value = reels.length === 1 ? "from-reel" : "from-all";
+  sourceHintEl.textContent = reels.length === 1
+    ? "Konten akan dibuat berdasarkan 1 Reel yang dipilih."
+    : `Konten akan dibuat berdasarkan ${reels.length} Reel top.`;
+
+  reelInfoText.innerHTML = reels
+    .map(
+      (r, i) =>
+        `<div>#${i + 1} ${r.url} — ${formatNum(r.views)} views, ${r.engRate}% ER</div>`
+    )
+    .join("");
+
+  // Auto-isi sample caption dengan meta-info dari reels
+  const autoSamples = reels
+    .map((r) => `Reel dengan ${formatNum(r.views)} views dan ${r.engRate}% engagement rate`)
+    .join("\n");
+  if (!sampleCaptionsEl.value.trim()) {
+    sampleCaptionsEl.value = autoSamples;
+  }
+
+  // Auto scroll ke area generate
+  setTimeout(() => {
+    generateBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+    showToast(`📎 ${reels.length} Reel dijadikan referensi. Klik "Generate Konten".`, "info");
+  }, 200);
 }
 
 // ============================================================
@@ -916,52 +1491,102 @@ Balas dalam Bahasa Indonesia, ringkas, maksimal 500 kata.`;
 // ============================================================
 analyzeBtn.addEventListener("click", async () => {
   if (parsedData.length === 0) {
-    showStatus("❌ Tidak ada data untuk dianalisis.", "err");
+    showStatus(statusAnalyze, "❌ Tidak ada data.", "err");
     return;
   }
 
   analyzeBtn.disabled = true;
-  resultEl.classList.remove("show");
+  analyzeResult.classList.remove("show");
   insightCard.style.display = "none";
-  showStatus("Menganalisis data...", "info", true);
+  showStatus(statusAnalyze, "Menganalisis data...", "info", true);
 
   try {
     analysisResult = analyzeData(parsedData);
-
     renderStats(analysisResult.stats);
     renderTop5(analysisResult.reels);
     renderTable(analysisResult.reels);
-    resultEl.classList.add("show");
+    analyzeResult.classList.add("show");
 
     const apiKey = apiKeyEl.value.trim();
     if (apiKey && apiKey.startsWith("gsk_")) {
-      showStatus("Meminta insight dari Groq AI...", "info", true);
+      showStatus(statusAnalyze, "Meminta insight dari Groq AI...", "info", true);
       try {
         const insight = await getGroqInsight(apiKey, analysisResult);
         insightBox.textContent = insight;
         insightCard.style.display = "block";
-        showStatus("✅ Selesai! Analisis + insight AI siap.", "ok");
+        showStatus(statusAnalyze, "✅ Selesai! Analisis + insight AI siap.", "ok");
       } catch (err) {
-        console.error(err);
-        showStatus("⚠️ Analisis lokal selesai, tapi insight AI gagal: " + err.message, "err");
+        showStatus(statusAnalyze, "⚠️ Analisis lokal selesai, tapi insight AI gagal: " + err.message, "err");
       }
     } else {
-      showStatus("✅ Analisis selesai! (Isi Groq API key untuk dapat insight AI)", "ok");
+      showStatus(statusAnalyze, "✅ Analisis selesai! (Isi Groq API Key untuk insight AI)", "ok");
     }
 
-    setTimeout(() => hideStatus(), 5000);
+    setTimeout(() => hideStatus(statusAnalyze), 5000);
+    analyzeResult.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (err) {
-    console.error(err);
-    showStatus("❌ " + (err.message || "Terjadi kesalahan."), "err");
+    showStatus(statusAnalyze, "❌ " + (err.message || "Error"), "err");
   } finally {
     analyzeBtn.disabled = false;
   }
 });
 
 // ============================================================
+// EVENT: GENERATE ALL TOP 5
+// ============================================================
+generateAllBtn.addEventListener("click", () => {
+  if (!analysisResult) {
+    showToast("Analisis dulu sebelum generate.", "err");
+    return;
+  }
+  generateFromReels(analysisResult.reels.slice(0, 5));
+});
+
+// ============================================================
+// EVENT: GENERATE KONTEN (TAB 2)
+// ============================================================
+generateBtn.addEventListener("click", async () => {
+  const apiKey = apiKeyEl.value.trim();
+  if (!apiKey) {
+    showStatus(statusGenerate, "❌ Masukkan Groq API Key dulu.", "err");
+    return;
+  }
+  if (!apiKey.startsWith("gsk_")) {
+    showStatus(statusGenerate, "⚠️ Groq API Key biasanya diawali 'gsk_'. Cek lagi ya.", "err");
+  }
+
+  generateBtn.disabled = true;
+  generateResult.classList.remove("show");
+  showStatus(statusGenerate, "Mengirim permintaan ke Groq...", "info", true);
+
+  try {
+    const samples = sampleCaptionsEl.value.trim();
+    const extra = extraInstructionEl.value.trim();
+    const prompt = buildPrompt(samples, extra);
+    const raw = await callGroq(apiKey, prompt);
+    showStatus(statusGenerate, "Membaca hasil dari Groq...", "info", true);
+
+    const result = parseGroqJson(raw);
+    renderContentResult(result);
+
+    showStatus(statusGenerate, "✅ Selesai! Scroll ke bawah untuk melihat hasil.", "ok");
+    setTimeout(() => hideStatus(statusGenerate), 3000);
+    generateResult.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    console.error(err);
+    let msg = err.message || "Terjadi kesalahan.";
+    if (msg.includes("Invalid API Key") || msg.includes("401")) msg = "API Key tidak valid.";
+    else if (msg.includes("rate limit") || msg.includes("429")) msg = "Rate-limit tercapai. Tunggu 1-2 menit.";
+    showStatus(statusGenerate, "❌ " + msg, "err");
+  } finally {
+    generateBtn.disabled = false;
+  }
+});
+
+// ============================================================
 // DOWNLOAD JSON
 // ============================================================
-downloadBtn.addEventListener("click", () => {
+downloadAnalysisBtn.addEventListener("click", () => {
   if (!analysisResult) return;
   const output = {
     file_name: currentFileName,
@@ -969,17 +1594,24 @@ downloadBtn.addEventListener("click", () => {
     stats: analysisResult.stats,
     reels: analysisResult.reels,
   };
-  const blob = new Blob([JSON.stringify(output, null, 2)], {
-    type: "application/json",
-  });
+  downloadJSON(output, `analisis_reel`);
+});
+
+downloadContentBtn.addEventListener("click", () => {
+  if (!lastContentResult) return;
+  downloadJSON(lastContentResult, `content_plan`);
+});
+
+function downloadJSON(obj, prefix) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   a.href = url;
-  a.download = `analisis_reel_${ts}.json`;
+  a.download = `${prefix}_${ts}.json`;
   a.click();
   URL.revokeObjectURL(url);
-});
+}
 
 // ============================================================
 // COPY TOP 5
@@ -988,10 +1620,7 @@ copyTop5Btn.addEventListener("click", () => {
   if (!analysisResult) return;
   const top5 = analysisResult.reels.slice(0, 5);
   const text = top5
-    .map(
-      (r, i) =>
-        `#${i + 1} (${formatNum(r.views)} views, ${formatNum(r.likes)} likes, ${r.engRate}% ER)\n${r.url}`
-    )
+    .map((r, i) => `#${i + 1} (${formatNum(r.views)} views, ${formatNum(r.likes)} likes, ${r.engRate}% ER)\n${r.url}`)
     .join("\n\n");
 
   navigator.clipboard.writeText(text).then(() => {
@@ -1002,4 +1631,4 @@ copyTop5Btn.addEventListener("click", () => {
 });
 </script>
 </body>
-</html>23y.
+</html>
