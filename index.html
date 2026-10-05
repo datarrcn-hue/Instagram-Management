@@ -562,7 +562,7 @@
   }
 
   /* ============================================ */
-  /* REKOMENDASI STRATEGI */
+  /* REKOMENDASI STRATEGI - RAPI & SEIMBANG */
   /* ============================================ */
   .reco-header {
     display: flex;
@@ -595,20 +595,21 @@
     color: var(--muted);
   }
 
+  /* GRID 3 KOLOM SEIMBANG */
   .reco-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
+    align-items: stretch;
   }
-  @media (min-width: 720px) {
-    .reco-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-    .reco-grid .reco-card.full-width {
-      grid-column: 1 / -1;
-    }
+  @media (max-width: 900px) {
+    .reco-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .reco-grid { grid-template-columns: 1fr; }
   }
 
+  /* Kartu seimbang - flex column, tinggi seragam */
   .reco-card {
     background: var(--card-2);
     border: 1px solid var(--border);
@@ -618,11 +619,19 @@
     animation: cardIn 0.4s ease both;
     display: flex;
     flex-direction: column;
+    min-height: 220px;
+    height: 100%;
   }
   .reco-card:hover {
     border-color: var(--accent);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+
+  /* Kartu Niche full-width karena teksnya panjang */
+  .reco-card.full-width {
+    grid-column: 1 / -1;
+    min-height: auto;
   }
 
   .reco-card-header {
@@ -632,6 +641,7 @@
     margin-bottom: 12px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
   }
   .reco-card-icon {
     width: 34px;
@@ -645,7 +655,7 @@
     background: rgba(255,255,255,0.05);
   }
   .reco-card-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     margin: 0;
     color: var(--muted);
@@ -653,40 +663,57 @@
     letter-spacing: 0.5px;
   }
 
+  /* Value area - tetap, tinggi seragam */
   .reco-card-value {
     font-size: 15px;
     font-weight: 700;
     color: #fff;
-    margin-bottom: 8px;
     line-height: 1.4;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    min-height: 42px;
+    display: flex;
+    align-items: flex-start;
+    word-break: break-word;
   }
 
+  /* Reason area - fleksibel, mengisi ruang tersisa */
   .reco-card-reason {
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--muted);
-    line-height: 1.6;
-    flex-grow: 1;
+    line-height: 1.55;
     margin-bottom: 12px;
+    flex-grow: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
   }
 
+  /* Actions selalu di dasar */
   .reco-card-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
   }
 
   .btn-apply {
     background: rgba(34,197,94,0.15);
     border: 1px solid rgba(34,197,94,0.4);
     color: #86efac;
-    padding: 6px 12px;
+    padding: 6px 10px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     width: auto;
+    flex: 1;
     transition: all 0.15s;
+    white-space: nowrap;
   }
   .btn-apply:hover:not(:disabled) {
     background: rgba(34,197,94,0.25);
@@ -705,17 +732,19 @@
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
-    padding: 6px 12px;
+    padding: 6px 10px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     cursor: pointer;
     width: auto;
+    flex: 1;
     transition: all 0.15s;
+    white-space: nowrap;
   }
   .btn-copy-reco:hover { border-color: var(--accent); color: var(--text); }
 
-  /* Warna aksen per kategori rekomendasi */
+  /* Warna aksen per kategori */
   .reco-card.cat-niche    .reco-card-icon { background: rgba(225,48,108,0.15); color: var(--accent); }
   .reco-card.cat-tone     .reco-card-icon { background: rgba(168,85,247,0.15); color: var(--purple); }
   .reco-card.cat-hashtag  .reco-card-icon { background: rgba(59,130,246,0.15); color: var(--info); }
@@ -731,6 +760,20 @@
   .reco-card.cat-usia     .reco-card-value { color: #5eead4; }
   .reco-card.cat-gender   .reco-card-value { color: #f9a8d4; }
   .reco-card.cat-jam      .reco-card-value { color: #86efac; }
+
+  /* Kartu full-width: layout 2 kolom dalam kartu */
+  .reco-card.full-width .reco-card-body-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 600px) {
+    .reco-card.full-width .reco-card-body-split {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
 
   /* Tabs */
   .tabs {
@@ -855,12 +898,9 @@
     <button class="tab" data-tab="generate">✨ Generate Konten</button>
   </div>
 
-  <!-- ============================================ -->
   <!-- TAB 1: ANALISIS -->
-  <!-- ============================================ -->
   <div class="tab-content active" id="tab-analisis">
 
-    <!-- API KEY -->
     <div class="card">
       <h2>🔑 Groq API Key</h2>
       <div class="field">
@@ -874,7 +914,6 @@
       </div>
     </div>
 
-    <!-- UPLOAD -->
     <div class="card">
       <h2>1️⃣ Upload File Data Scrape</h2>
       <div class="file-drop" id="fileDrop">
@@ -895,7 +934,6 @@
       <div class="file-info" id="fileInfo"></div>
     </div>
 
-    <!-- PROFIL KONTEN -->
     <div class="card">
       <h2>⚙️ Profil Konten (isi awal, akan disempurnakan oleh rekomendasi AI)</h2>
       <div class="row">
@@ -922,21 +960,17 @@
       </div>
     </div>
 
-    <!-- ANALYZE -->
     <button id="analyzeBtn" disabled>🔍 Analisis Sekarang</button>
     <div style="margin-top: 14px;"></div>
     <div class="status" id="statusAnalyze"></div>
 
-    <!-- HASIL ANALISIS -->
     <div class="result" id="analyzeResult">
       <div class="card">
         <h2>📈 Statistik Keseluruhan</h2>
         <div class="stats-grid" id="statsGrid"></div>
       </div>
 
-      <!-- ============================================ -->
-      <!-- REKOMENDASI STRATEGI KONTEN -->
-      <!-- ============================================ -->
+      <!-- REKOMENDASI STRATEGI KONTEN - TAMPILAN RAPI -->
       <div class="card" id="recoCard" style="display:none;">
         <div class="reco-header">
           <div class="reco-header-icon">🎯</div>
@@ -945,9 +979,7 @@
             <p>Berdasarkan pola data Reel — klik "Terapkan" untuk update form</p>
           </div>
         </div>
-        <div class="reco-grid" id="recoGrid">
-          <!-- Diisi via JS -->
-        </div>
+        <div class="reco-grid" id="recoGrid"></div>
       </div>
 
       <div class="section-title">
@@ -959,7 +991,6 @@
       </p>
       <div id="top5"></div>
 
-      <!-- INSIGHT AI -->
       <div class="card" id="insightCard" style="display:none;">
         <div class="insight-header">
           <div class="insight-header-icon">🧠</div>
@@ -1002,9 +1033,7 @@
 
   </div>
 
-  <!-- ============================================ -->
   <!-- TAB 2: GENERATE KONTEN -->
-  <!-- ============================================ -->
   <div class="tab-content" id="tab-generate">
     <div class="card">
       <h2>✨ Generate Konten Baru</h2>
@@ -1406,9 +1435,6 @@ function formatNum(n) {
   return String(n);
 }
 
-// ============================================================
-// RENDER STATS
-// ============================================================
 function renderStats(stats) {
   const items = [
     { label: "Total Reel", value: stats.total },
@@ -1425,9 +1451,6 @@ function renderStats(stats) {
     </div>`).join("");
 }
 
-// ============================================================
-// RENDER TOP 5
-// ============================================================
 function renderTop5(reels) {
   const top5 = reels.slice(0, 5);
   const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
@@ -1464,9 +1487,6 @@ function renderTop5(reels) {
   });
 }
 
-// ============================================================
-// RENDER TABLE
-// ============================================================
 function renderTable(reels) {
   totalCount.textContent = reels.length;
   tableBody.innerHTML = reels.map((r, i) => `
@@ -1489,11 +1509,10 @@ function renderTable(reels) {
 }
 
 // ============================================================
-// INSIGHT AI - PARSER
+// INSIGHT AI PARSER
 // ============================================================
 function parseInsightSections(text) {
   if (!text || !text.trim()) return [];
-
   const lines = text.split(/\r?\n/);
   const sections = [];
   let current = null;
@@ -1537,17 +1556,12 @@ function parseInsightSections(text) {
     current.body.push(line);
   }
   flush();
-
   return sections.filter((s) => s.body.length > 0 || s.title);
 }
 
-// ============================================================
-// MARKDOWN LITE
-// ============================================================
 function markdownLite(text) {
   if (!text) return "";
   let html = escapeHtml(text);
-
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
 
@@ -1586,9 +1600,6 @@ function markdownLite(text) {
   return out.join("");
 }
 
-// ============================================================
-// RENDER INSIGHT
-// ============================================================
 function renderInsight(insightText) {
   insightGrid.innerHTML = "";
   const sections = parseInsightSections(insightText);
@@ -1632,11 +1643,10 @@ function renderInsight(insightText) {
 }
 
 // ============================================================
-// REKOMENDASI STRATEGI - PROMPT & PARSER
+// REKOMENDASI STRATEGI
 // ============================================================
 async function getStrategyRecommendations(apiKey, analysis) {
   const top10 = analysis.reels.slice(0, 10);
-
   const formatReel = (r) =>
     `- ${r.shortcode}: views ${formatNum(r.views)}, likes ${formatNum(r.likes)}, comments ${formatNum(r.comments)}, eng.rate ${r.engRate}%`;
 
@@ -1664,38 +1674,38 @@ Berikan 7 rekomendasi strategi konten dalam Bahasa Indonesia. Balas HANYA JSON v
 
 {
   "niche": {
-    "value": "rekomendasi niche/kategori yang lebih spesifik (1 baris, max 80 char)",
-    "reason": "alasan singkat berbasis data (1-2 kalimat)"
+    "value": "rekomendasi niche/kategori yang lebih spesifik (max 80 char)",
+    "reason": "alasan singkat (max 2 kalimat)"
   },
   "tone": {
-    "value": "rekomendasi tone/gaya bahasa (1 baris, max 80 char)",
-    "reason": "alasan singkat (1-2 kalimat)"
+    "value": "rekomendasi tone/gaya bahasa (max 80 char)",
+    "reason": "alasan singkat (max 2 kalimat)"
   },
   "hashtags": {
     "value": "8-12 hashtag dipisah koma, TANPA simbol #",
-    "reason": "alasan singkat (1-2 kalimat)"
+    "reason": "alasan singkat (max 2 kalimat)"
   },
   "bahasa": {
     "value": "pilih salah satu: 'Bahasa Indonesia' atau 'English' atau 'Bahasa Indonesia + English mix'",
-    "reason": "alasan singkat (1-2 kalimat)"
+    "reason": "alasan singkat (max 2 kalimat)"
   },
   "target_usia": {
-    "value": "rentang usia target, contoh: 18-24 tahun, 25-34 tahun",
-    "reason": "alasan singkat (1-2 kalimat)"
+    "value": "rentang usia target, contoh: 18-24 tahun",
+    "reason": "alasan singkat (max 2 kalimat)"
   },
   "gender": {
-    "value": "prediksi gender dominan peminat, contoh: 'Perempuan (65%)' atau 'Laki-laki (60%)' atau 'Seimbang'",
-    "reason": "alasan singkat berbasis pola engagement (1-2 kalimat)"
+    "value": "prediksi gender dominan, contoh: 'Perempuan (65%)'",
+    "reason": "alasan singkat (max 2 kalimat)"
   },
   "jam_upload": {
     "value": "rekomendasi jam upload, contoh: '19:00-21:00 WIB'",
-    "reason": "alasan singkat (1-2 kalimat)"
+    "reason": "alasan singkat (max 2 kalimat)"
   }
 }
 
-CATATAN: Data tidak memuat info demografi asli. Untuk target_usia dan gender, berikan prediksi berbasis konteks niche dan engagement pattern. Jujur kalau ini prediksi.
+CATATAN: Data tidak memuat demografi asli. target_usia dan gender adalah prediksi berbasis konteks niche dan engagement pattern. Jujur kalau ini prediksi.
 
-Balas HANYA JSON valid, tanpa teks lain.`;
+Balas HANYA JSON valid.`;
 
   const response = await fetch(GROQ_URL, {
     method: "POST",
@@ -1728,16 +1738,16 @@ Balas HANYA JSON valid, tanpa teks lain.`;
 }
 
 // ============================================================
-// RENDER REKOMENDASI
+// RENDER REKOMENDASI - RAPI & SEIMBANG
 // ============================================================
 const recoMeta = {
-  niche:         { icon: "🎯", label: "Niche / Kategori", cat: "cat-niche" },
-  tone:          { icon: "🎨", label: "Tone / Gaya Bahasa", cat: "cat-tone" },
-  hashtags:      { icon: "#️⃣", label: "Hashtag Target", cat: "cat-hashtag" },
-  bahasa:        { icon: "🌐", label: "Bahasa Konten", cat: "cat-bahasa" },
-  target_usia:   { icon: "👥", label: "Target Usia", cat: "cat-usia" },
-  gender:        { icon: "⚥", label: "Gender Dominan", cat: "cat-gender" },
-  jam_upload:    { icon: "🕐", label: "Jam Upload", cat: "cat-jam" },
+  niche:       { icon: "🎯", label: "Niche / Kategori", cat: "cat-niche", fullWidth: true },
+  tone:        { icon: "🎨", label: "Tone / Gaya Bahasa", cat: "cat-tone" },
+  hashtags:    { icon: "#️⃣", label: "Hashtag Target", cat: "cat-hashtag" },
+  bahasa:      { icon: "🌐", label: "Bahasa Konten", cat: "cat-bahasa" },
+  target_usia: { icon: "👥", label: "Target Usia", cat: "cat-usia" },
+  gender:      { icon: "⚥", label: "Gender Dominan", cat: "cat-gender" },
+  jam_upload:  { icon: "🕐", label: "Jam Upload", cat: "cat-jam" },
 };
 
 function renderRecommendations(recs) {
@@ -1750,31 +1760,52 @@ function renderRecommendations(recs) {
     const data = recs[key];
     if (!data) return;
 
-    const meta = recoMeta[key] || { icon: "📌", label: key, cat: "" };
+    const meta = recoMeta[key] || { icon: "📌", label: key, cat: "", fullWidth: false };
     const card = document.createElement("div");
-    card.className = `reco-card ${meta.cat}`;
+    card.className = `reco-card ${meta.cat}${meta.fullWidth ? " full-width" : ""}`;
     card.style.animationDelay = `${idx * 50}ms`;
 
-    // tombol Apply hanya untuk yang bisa di-set ke form
     const canApply = ["niche", "tone", "hashtags", "bahasa"].includes(key);
 
-    card.innerHTML = `
-      <div class="reco-card-header">
-        <div class="reco-card-icon">${meta.icon}</div>
-        <h4 class="reco-card-title">${meta.label}</h4>
-      </div>
-      <div class="reco-card-value">${escapeHtml(data.value || "-")}</div>
-      <div class="reco-card-reason">${escapeHtml(data.reason || "")}</div>
-      <div class="reco-card-actions">
-        ${canApply ? `<button class="btn-apply" data-key="${key}">✓ Terapkan ke Form</button>` : ""}
-        <button class="btn-copy-reco" data-copy='${escapeHtml(JSON.stringify(data.value || ""))}'>📋 Copy</button>
-      </div>
-    `;
+    if (meta.fullWidth) {
+      // Layout 2 kolom untuk kartu full-width
+      card.innerHTML = `
+        <div class="reco-card-header">
+          <div class="reco-card-icon">${meta.icon}</div>
+          <h4 class="reco-card-title">${meta.label}</h4>
+        </div>
+        <div class="reco-card-body-split">
+          <div>
+            <div class="reco-card-value">${escapeHtml(data.value || "-")}</div>
+            ${canApply ? `<div style="display:flex; gap:6px; margin-top:8px;">
+              <button class="btn-apply" data-key="${key}">✓ Terapkan ke Form</button>
+              <button class="btn-copy-reco" data-copy='${escapeHtml(JSON.stringify(data.value || ""))}'>📋 Copy</button>
+            </div>` : ""}
+          </div>
+          <div class="reco-card-reason" style="-webkit-line-clamp: unset; display: block;">
+            ${escapeHtml(data.reason || "")}
+          </div>
+        </div>
+      `;
+    } else {
+      // Layout normal untuk kartu setengah/ketiga
+      card.innerHTML = `
+        <div class="reco-card-header">
+          <div class="reco-card-icon">${meta.icon}</div>
+          <h4 class="reco-card-title">${meta.label}</h4>
+        </div>
+        <div class="reco-card-value">${escapeHtml(data.value || "-")}</div>
+        <div class="reco-card-reason">${escapeHtml(data.reason || "")}</div>
+        <div class="reco-card-actions">
+          ${canApply ? `<button class="btn-apply" data-key="${key}">✓ Terapkan</button>` : ""}
+          <button class="btn-copy-reco" data-copy='${escapeHtml(JSON.stringify(data.value || ""))}'>📋 Copy</button>
+        </div>
+      `;
+    }
 
     recoGrid.appendChild(card);
   });
 
-  // Attach listeners
   recoGrid.querySelectorAll(".btn-apply").forEach((btn) => {
     btn.addEventListener("click", () => applyRecommendation(btn.dataset.key, btn));
   });
@@ -1796,7 +1827,6 @@ function applyRecommendation(key, btn) {
   else if (key === "tone") toneEl.value = val;
   else if (key === "hashtags") hashtagsEl.value = val;
   else if (key === "bahasa") {
-    // match option
     const opt = Array.from(languageEl.options).find((o) => o.value === val);
     if (opt) languageEl.value = val;
   }
@@ -1805,13 +1835,13 @@ function applyRecommendation(key, btn) {
   btn.classList.add("applied");
   showToast(`✅ ${recoMeta[key]?.label || key} diterapkan ke form.`, "ok");
   setTimeout(() => {
-    btn.textContent = "✓ Terapkan ke Form";
+    btn.textContent = key === "niche" ? "✓ Terapkan ke Form" : "✓ Terapkan";
     btn.classList.remove("applied");
   }, 2000);
 }
 
 // ============================================================
-// GET GROQ INSIGHT (existing)
+// INSIGHT AI (existing)
 // ============================================================
 async function getGroqInsight(apiKey, analysis) {
   const top5 = analysis.reels.slice(0, 5);
@@ -1884,7 +1914,7 @@ Balas ringkas, maksimal 500 kata.`;
 }
 
 // ============================================================
-// BUILD PROMPT & CALL GROQ (untuk generate konten)
+// BUILD PROMPT & CALL GROQ
 // ============================================================
 function buildPrompt(sampleCaptions, extraInstruction) {
   const niche = nicheEl.value.trim();
@@ -1993,7 +2023,7 @@ function escapeHtml(str) {
 }
 
 // ============================================================
-// RENDER HASIL GENERATE KONTEN
+// RENDER HASIL GENERATE
 // ============================================================
 function renderContentResult(result) {
   lastContentResult = result;
@@ -2059,9 +2089,6 @@ function renderContentResult(result) {
   generateResult.classList.add("show");
 }
 
-// ============================================================
-// GENERATE FROM REELS
-// ============================================================
 function generateFromReels(reels) {
   currentSourceReels = reels;
   switchTab("generate");
@@ -2113,7 +2140,6 @@ analyzeBtn.addEventListener("click", async () => {
 
     const apiKey = apiKeyEl.value.trim();
     if (apiKey && apiKey.startsWith("gsk_")) {
-      // --- Rekomendasi Strategi ---
       recoCard.style.display = "block";
       recoGrid.innerHTML = `
         <div class="insight-loading" style="grid-column:1/-1;">
@@ -2122,7 +2148,6 @@ analyzeBtn.addEventListener("click", async () => {
           <div style="font-size:12px; margin-top:4px;">Mohon tunggu 5-15 detik</div>
         </div>`;
 
-      // --- Insight AI ---
       insightCard.style.display = "block";
       insightGrid.innerHTML = `
         <div class="insight-loading">
@@ -2132,20 +2157,17 @@ analyzeBtn.addEventListener("click", async () => {
 
       showStatus(statusAnalyze, "Meminta rekomendasi & insight dari Groq AI...", "info", true);
 
-      // Jalankan paralel
       const [recoResult, insightResult] = await Promise.allSettled([
         getStrategyRecommendations(apiKey, analysisResult),
         getGroqInsight(apiKey, analysisResult),
       ]);
 
-      // Handle rekomendasi
       if (recoResult.status === "fulfilled") {
         renderRecommendations(recoResult.value);
       } else {
         recoGrid.innerHTML = `<div class="insight-empty" style="grid-column:1/-1;">⚠️ Gagal memuat rekomendasi: ${escapeHtml(recoResult.reason?.message || "Error")}</div>`;
       }
 
-      // Handle insight
       if (insightResult.status === "fulfilled") {
         renderInsight(insightResult.value);
       } else {
