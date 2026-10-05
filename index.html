@@ -418,9 +418,7 @@
     white-space: pre-wrap;
   }
 
-  /* ============================================ */
   /* INSIGHT AI */
-  /* ============================================ */
   .insight-header {
     display: flex;
     align-items: center;
@@ -561,9 +559,7 @@
     font-style: italic;
   }
 
-  /* ============================================ */
-  /* REKOMENDASI STRATEGI - RAPI & SEIMBANG */
-  /* ============================================ */
+  /* REKOMENDASI STRATEGI */
   .reco-header {
     display: flex;
     align-items: center;
@@ -595,7 +591,6 @@
     color: var(--muted);
   }
 
-  /* GRID 3 KOLOM SEIMBANG */
   .reco-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -609,7 +604,6 @@
     .reco-grid { grid-template-columns: 1fr; }
   }
 
-  /* Kartu seimbang - flex column, tinggi seragam */
   .reco-card {
     background: var(--card-2);
     border: 1px solid var(--border);
@@ -628,7 +622,6 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
   }
 
-  /* Kartu Niche full-width karena teksnya panjang */
   .reco-card.full-width {
     grid-column: 1 / -1;
     min-height: auto;
@@ -663,7 +656,6 @@
     letter-spacing: 0.5px;
   }
 
-  /* Value area - tetap, tinggi seragam */
   .reco-card-value {
     font-size: 15px;
     font-weight: 700;
@@ -677,7 +669,6 @@
     word-break: break-word;
   }
 
-  /* Reason area - fleksibel, mengisi ruang tersisa */
   .reco-card-reason {
     font-size: 12.5px;
     color: var(--muted);
@@ -690,7 +681,6 @@
     -webkit-box-orient: vertical;
   }
 
-  /* Actions selalu di dasar */
   .reco-card-actions {
     display: flex;
     gap: 6px;
@@ -744,7 +734,6 @@
   }
   .btn-copy-reco:hover { border-color: var(--accent); color: var(--text); }
 
-  /* Warna aksen per kategori */
   .reco-card.cat-niche    .reco-card-icon { background: rgba(225,48,108,0.15); color: var(--accent); }
   .reco-card.cat-tone     .reco-card-icon { background: rgba(168,85,247,0.15); color: var(--purple); }
   .reco-card.cat-hashtag  .reco-card-icon { background: rgba(59,130,246,0.15); color: var(--info); }
@@ -761,7 +750,6 @@
   .reco-card.cat-gender   .reco-card-value { color: #f9a8d4; }
   .reco-card.cat-jam      .reco-card-value { color: #86efac; }
 
-  /* Kartu full-width: layout 2 kolom dalam kartu */
   .reco-card.full-width .reco-card-body-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -882,6 +870,32 @@
   .toast.ok { border-color: var(--ok); color: #86efac; }
   .toast.err { border-color: var(--err); color: #fca5a5; }
   .toast.info { border-color: #3b82f6; color: #93c5fd; }
+
+  /* Banner AI profile */
+  .ai-profile-banner {
+    background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(20,184,166,0.08));
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #86efac;
+  }
+  .ai-profile-banner-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #22c55e, #14b8a6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .ai-profile-banner strong { color: #fff; }
 </style>
 </head>
 <body>
@@ -934,49 +948,31 @@
       <div class="file-info" id="fileInfo"></div>
     </div>
 
-    <div class="card">
-      <h2>⚙️ Profil Konten (isi awal, akan disempurnakan oleh rekomendasi AI)</h2>
-      <div class="row">
-        <div class="field">
-          <label>Niche / Kategori</label>
-          <input type="text" id="niche" value="Kuliner rumahan / masakan sehari-hari" />
-        </div>
-        <div class="field">
-          <label>Bahasa Konten</label>
-          <select id="language">
-            <option value="Bahasa Indonesia" selected>Bahasa Indonesia</option>
-            <option value="English">English</option>
-            <option value="Bahasa Indonesia + English mix">Indonesia + English mix</option>
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label>Tone / Gaya Bahasa</label>
-        <input type="text" id="tone" value="Santai, hangat, cocok untuk keluarga muda" />
-      </div>
-      <div class="field">
-        <label>Hashtag target (pisah koma)</label>
-        <input type="text" id="hashtags" value="reseprumahan, masakansederhana, resepmudah, masakanindonesia" />
-      </div>
-    </div>
-
     <button id="analyzeBtn" disabled>🔍 Analisis Sekarang</button>
     <div style="margin-top: 14px;"></div>
     <div class="status" id="statusAnalyze"></div>
 
     <div class="result" id="analyzeResult">
+      <!-- PROFIL AI BANNER -->
+      <div class="ai-profile-banner" id="aiProfileBanner" style="display:none;">
+        <div class="ai-profile-banner-icon">🤖</div>
+        <div>
+          <strong>Profil konten otomatis dari AI</strong> — Niche, Tone, Hashtag & Bahasa sudah diset dari analisis. Kamu bisa override lewat kartu Rekomendasi di bawah.
+        </div>
+      </div>
+
       <div class="card">
         <h2>📈 Statistik Keseluruhan</h2>
         <div class="stats-grid" id="statsGrid"></div>
       </div>
 
-      <!-- REKOMENDASI STRATEGI KONTEN - TAMPILAN RAPI -->
+      <!-- REKOMENDASI STRATEGI KONTEN -->
       <div class="card" id="recoCard" style="display:none;">
         <div class="reco-header">
           <div class="reco-header-icon">🎯</div>
           <div class="reco-header-text">
             <h3>Rekomendasi Strategi Konten</h3>
-            <p>Berdasarkan pola data Reel — klik "Terapkan" untuk update form</p>
+            <p>Berdasarkan pola data Reel — nilai ini otomatis dipakai saat Generate Konten</p>
           </div>
         </div>
         <div class="reco-grid" id="recoGrid"></div>
@@ -1037,10 +1033,19 @@
   <div class="tab-content" id="tab-generate">
     <div class="card">
       <h2>✨ Generate Konten Baru</h2>
+
+      <!-- Info profil AI yang dipakai -->
+      <div class="ai-profile-banner" id="aiProfileBanner2" style="display:none;">
+        <div class="ai-profile-banner-icon">🤖</div>
+        <div id="aiProfileText">
+          Profil konten otomatis dari analisis AI.
+        </div>
+      </div>
+
       <div class="field">
         <label>Sumber Inspirasi</label>
         <select id="sourceMode">
-          <option value="manual">Manual (isi sendiri di bawah)</option>
+          <option value="manual">Manual (isi caption contoh di bawah)</option>
           <option value="from-reel">Dari Reel Top (pilih dari hasil analisis)</option>
           <option value="from-all">Dari semua Top 5 Reel</option>
         </select>
@@ -1099,14 +1104,23 @@ const GROQ_MODEL = "openai/gpt-oss-120b";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // ============================================================
+// STATE PROFIL KONTEN (diisi oleh AI, dipakai generate)
+// ============================================================
+const contentProfile = {
+  niche: "Kuliner rumahan / masakan sehari-hari", // default, akan dioverride AI
+  tone: "Santai, hangat, cocok untuk keluarga muda",
+  hashtags: "reseprumahan, masakansederhana, resepmudah, masakanindonesia",
+  bahasa: "Bahasa Indonesia",
+  target_usia: "-",
+  gender: "-",
+  jam_upload: "-",
+};
+
+// ============================================================
 // ELEMEN
 // ============================================================
 const $ = (id) => document.getElementById(id);
 const apiKeyEl = $("apiKey");
-const nicheEl = $("niche");
-const languageEl = $("language");
-const toneEl = $("tone");
-const hashtagsEl = $("hashtags");
 const sourceModeEl = $("sourceMode");
 const sourceHintEl = $("sourceHint");
 const reelInfoBox = $("reelInfoBox");
@@ -1120,6 +1134,9 @@ const fileInfo = $("fileInfo");
 const analyzeBtn = $("analyzeBtn");
 const statusAnalyze = $("statusAnalyze");
 const analyzeResult = $("analyzeResult");
+const aiProfileBanner = $("aiProfileBanner");
+const aiProfileBanner2 = $("aiProfileBanner2");
+const aiProfileText = $("aiProfileText");
 const statsGrid = $("statsGrid");
 const recoCard = $("recoCard");
 const recoGrid = $("recoGrid");
@@ -1650,21 +1667,10 @@ async function getStrategyRecommendations(apiKey, analysis) {
   const formatReel = (r) =>
     `- ${r.shortcode}: views ${formatNum(r.views)}, likes ${formatNum(r.likes)}, comments ${formatNum(r.comments)}, eng.rate ${r.engRate}%`;
 
-  const currentNiche = nicheEl.value.trim();
-  const currentTone = toneEl.value.trim();
-  const currentHashtags = hashtagsEl.value.trim();
-  const currentLang = languageEl.value.trim();
-
   const prompt = `Kamu adalah strategist konten Instagram berpengalaman di pasar Indonesia.
 
 DATA:
 Total ${analysis.stats.total} Reel, rata-rata views ${formatNum(analysis.stats.avgViews)}, rata-rata engagement rate ${analysis.stats.avgEngRate}%.
-
-Profil saat ini:
-- Niche: ${currentNiche}
-- Tone: ${currentTone}
-- Hashtag: ${currentHashtags}
-- Bahasa: ${currentLang}
 
 TOP 10 REEL:
 ${top10.map(formatReel).join("\n")}
@@ -1737,9 +1743,6 @@ Balas HANYA JSON valid.`;
   return parseGroqJson(text);
 }
 
-// ============================================================
-// RENDER REKOMENDASI - RAPI & SEIMBANG
-// ============================================================
 const recoMeta = {
   niche:       { icon: "🎯", label: "Niche / Kategori", cat: "cat-niche", fullWidth: true },
   tone:        { icon: "🎨", label: "Tone / Gaya Bahasa", cat: "cat-tone" },
@@ -1752,6 +1755,17 @@ const recoMeta = {
 
 function renderRecommendations(recs) {
   currentRecommendations = recs;
+
+  // AUTO-APPLY ke contentProfile
+  if (recs.niche?.value) contentProfile.niche = recs.niche.value;
+  if (recs.tone?.value) contentProfile.tone = recs.tone.value;
+  if (recs.hashtags?.value) contentProfile.hashtags = recs.hashtags.value;
+  if (recs.bahasa?.value) contentProfile.bahasa = recs.bahasa.value;
+  if (recs.target_usia?.value) contentProfile.target_usia = recs.target_usia.value;
+  if (recs.gender?.value) contentProfile.gender = recs.gender.value;
+  if (recs.jam_upload?.value) contentProfile.jam_upload = recs.jam_upload.value;
+
+  updateAIProfileBanner();
   recoGrid.innerHTML = "";
 
   const order = ["niche", "tone", "hashtags", "bahasa", "target_usia", "gender", "jam_upload"];
@@ -1765,10 +1779,7 @@ function renderRecommendations(recs) {
     card.className = `reco-card ${meta.cat}${meta.fullWidth ? " full-width" : ""}`;
     card.style.animationDelay = `${idx * 50}ms`;
 
-    const canApply = ["niche", "tone", "hashtags", "bahasa"].includes(key);
-
     if (meta.fullWidth) {
-      // Layout 2 kolom untuk kartu full-width
       card.innerHTML = `
         <div class="reco-card-header">
           <div class="reco-card-icon">${meta.icon}</div>
@@ -1777,10 +1788,9 @@ function renderRecommendations(recs) {
         <div class="reco-card-body-split">
           <div>
             <div class="reco-card-value">${escapeHtml(data.value || "-")}</div>
-            ${canApply ? `<div style="display:flex; gap:6px; margin-top:8px;">
-              <button class="btn-apply" data-key="${key}">✓ Terapkan ke Form</button>
+            <div style="display:flex; gap:6px; margin-top:8px;">
               <button class="btn-copy-reco" data-copy='${escapeHtml(JSON.stringify(data.value || ""))}'>📋 Copy</button>
-            </div>` : ""}
+            </div>
           </div>
           <div class="reco-card-reason" style="-webkit-line-clamp: unset; display: block;">
             ${escapeHtml(data.reason || "")}
@@ -1788,7 +1798,6 @@ function renderRecommendations(recs) {
         </div>
       `;
     } else {
-      // Layout normal untuk kartu setengah/ketiga
       card.innerHTML = `
         <div class="reco-card-header">
           <div class="reco-card-icon">${meta.icon}</div>
@@ -1797,7 +1806,6 @@ function renderRecommendations(recs) {
         <div class="reco-card-value">${escapeHtml(data.value || "-")}</div>
         <div class="reco-card-reason">${escapeHtml(data.reason || "")}</div>
         <div class="reco-card-actions">
-          ${canApply ? `<button class="btn-apply" data-key="${key}">✓ Terapkan</button>` : ""}
           <button class="btn-copy-reco" data-copy='${escapeHtml(JSON.stringify(data.value || ""))}'>📋 Copy</button>
         </div>
       `;
@@ -1806,9 +1814,6 @@ function renderRecommendations(recs) {
     recoGrid.appendChild(card);
   });
 
-  recoGrid.querySelectorAll(".btn-apply").forEach((btn) => {
-    btn.addEventListener("click", () => applyRecommendation(btn.dataset.key, btn));
-  });
   recoGrid.querySelectorAll(".btn-copy-reco").forEach((btn) => {
     btn.addEventListener("click", () => {
       const text = JSON.parse(btn.dataset.copy);
@@ -1819,25 +1824,11 @@ function renderRecommendations(recs) {
   recoCard.style.display = "block";
 }
 
-function applyRecommendation(key, btn) {
-  if (!currentRecommendations || !currentRecommendations[key]) return;
-  const val = currentRecommendations[key].value || "";
-
-  if (key === "niche") nicheEl.value = val;
-  else if (key === "tone") toneEl.value = val;
-  else if (key === "hashtags") hashtagsEl.value = val;
-  else if (key === "bahasa") {
-    const opt = Array.from(languageEl.options).find((o) => o.value === val);
-    if (opt) languageEl.value = val;
-  }
-
-  btn.textContent = "✓ Diterapkan!";
-  btn.classList.add("applied");
-  showToast(`✅ ${recoMeta[key]?.label || key} diterapkan ke form.`, "ok");
-  setTimeout(() => {
-    btn.textContent = key === "niche" ? "✓ Terapkan ke Form" : "✓ Terapkan";
-    btn.classList.remove("applied");
-  }, 2000);
+function updateAIProfileBanner() {
+  const text = `Niche: <strong>${escapeHtml(contentProfile.niche)}</strong> • Tone: <strong>${escapeHtml(contentProfile.tone)}</strong> • Bahasa: <strong>${escapeHtml(contentProfile.bahasa)}</strong> • Target: <strong>${escapeHtml(contentProfile.target_usia)}</strong>`;
+  aiProfileBanner.style.display = "flex";
+  aiProfileBanner2.style.display = "flex";
+  aiProfileText.innerHTML = `Profil konten AI aktif — ${text}`;
 }
 
 // ============================================================
@@ -1914,13 +1905,19 @@ Balas ringkas, maksimal 500 kata.`;
 }
 
 // ============================================================
-// BUILD PROMPT & CALL GROQ
+// BUILD PROMPT & CALL GROQ (pakai contentProfile dari AI)
 // ============================================================
 function buildPrompt(sampleCaptions, extraInstruction) {
-  const niche = nicheEl.value.trim();
-  const language = languageEl.value.trim();
-  const tone = toneEl.value.trim();
-  const hashtags = hashtagsEl.value.trim();
+  const profileSection = `
+Profil konten (hasil analisis AI):
+- Niche: ${contentProfile.niche}
+- Tone: ${contentProfile.tone}
+- Bahasa konten: ${contentProfile.bahasa}
+- Hashtag target: ${contentProfile.hashtags}
+- Target usia: ${contentProfile.target_usia}
+- Gender dominan: ${contentProfile.gender}
+- Jam upload rekomendasi: ${contentProfile.jam_upload}
+`;
 
   const sampleSection = sampleCaptions
     ? `\nContoh caption viral:\n${sampleCaptions.split("\n").filter((l) => l.trim()).map((l, i) => `${i + 1}. ${l.trim()}`).join("\n")}`
@@ -1934,11 +1931,7 @@ function buildPrompt(sampleCaptions, extraInstruction) {
 
   return `Kamu adalah content strategist Instagram profesional.
 
-Profil akun saya:
-- Niche: ${niche}
-- Tone: ${tone}
-- Bahasa konten: ${language}
-- Hashtag target: ${hashtags}
+${profileSection}
 ${sampleSection}${extra}
 ${reelSection}
 
@@ -1947,8 +1940,8 @@ Tugas kamu:
 1. Ringkas tren (3-5 kalimat).
 
 2. Buat 3 ide konten Instagram siap posting. Setiap ide:
-   - title: Judul dalam ${language}, singkat menarik (max 60 char)
-   - caption: Caption lengkap ${language}, dengan emoji, max 200 kata, HOOK kuat di awal, CTA di akhir
+   - title: Judul dalam ${contentProfile.bahasa}, singkat menarik (max 60 char)
+   - caption: Caption lengkap ${contentProfile.bahasa}, dengan emoji, max 200 kata, HOOK kuat di awal, CTA di akhir
    - image_prompt_for_gemini: Prompt BAHASA INGGRIS, WAJIB fotorealistik seperti hasil foto kamera profesional (DSLR/mirrorless). Sertakan kamera & lensa, setting, pencahayaan natural, komposisi, color grading, aspect ratio 4:5 atau 1:1, dan tag: "photorealistic, ultra-detailed, natural skin texture, shot on real camera, 8k, high resolution"
    - hashtags: 8-12 tag tanpa simbol #
 
@@ -2129,6 +2122,7 @@ analyzeBtn.addEventListener("click", async () => {
   analyzeResult.classList.remove("show");
   insightCard.style.display = "none";
   recoCard.style.display = "none";
+  aiProfileBanner.style.display = "none";
   showStatus(statusAnalyze, "Menganalisis data...", "info", true);
 
   try {
@@ -2249,6 +2243,7 @@ downloadAnalysisBtn.addEventListener("click", () => {
     file_name: currentFileName,
     analyzed_at: new Date().toISOString(),
     stats: analysisResult.stats,
+    content_profile: contentProfile,
     recommendations: currentRecommendations,
     reels: analysisResult.reels,
   };
