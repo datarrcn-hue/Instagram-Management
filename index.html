@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Analisis Reel Instagram</title>
+
+<!-- SheetJS untuk baca XLSX -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #171a23;
+    --card-2: #1e2230;
+    --border: #2a2f3d;
+    --text: #e6e8ee;
+    --muted: #8b92a6;
+    --accent: #e1306c;
+    --accent-2: #833ab4;
+    --ok: #22c55e;
+    --warn: #f59e0b;
+    --err: #ef4444;
+    --gold: #fbbf24;
+    --silver: #cbd5e1;
+    --bronze: #d97706;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+    line-height: 1.5;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 28px; }
+  h1 {
+    font-size: 26px;
+    margin: 0 0 6px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 14px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  input[type="text"], input[type="password"], textarea, select {
+    width: 100%;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+  .file-drop {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--card-2);
+  }
+  .file-drop:hover, .file-drop.dragover {
+    border-color: var(--accent);
+    background: rgba(225,48,108,0.05);
+  }
+  .file-drop input { display: none; }
+  .file-drop-icon { font-size: 36px; margin-bottom: 10px; }
+  .file-drop-text { font-size: 14px; color: var(--muted); }
+  .file-drop-text strong { color: var(--text); }
+  .file-drop-formats {
+    margin-top: 10px;
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .format-badge {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .file-info {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 8px;
+    font-size: 13px;
+    color: #86efac;
+    display: none;
+  }
+  .file-info.show { display: block; }
+
+  button {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  button:hover:not(:disabled) { transform: translateY(-1px); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    padding: 8px 14px;
+    width: auto;
+    margin-right: 8px;
+  }
+
+  .status {
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
+  .status.ok { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+  .status.err { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+  .result { display: none; }
+  .result.show { display: block; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 24px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .section-title .badge {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .reel-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.15s;
+    position: relative;
+    margin-top: 12px;
+  }
+  .reel-card:hover { border-color: var(--accent); }
+  .reel-card.top-1 { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+  .reel-card.top-2 { border-color: var(--silver); box-shadow: 0 0 0 1px var(--silver) inset; }
+  .reel-card.top-3 { border-color: var(--bronze); box-shadow: 0 0 0 1px var(--bronze) inset; }
+
+  .rank-badge {
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .rank-badge.gold { background: linear-gradient(90deg, #fbbf24, #d97706); }
+  .rank-badge.silver { background: linear-gradient(90deg, #cbd5e1, #64748b); }
+  .rank-badge.bronze { background: linear-gradient(90deg, #d97706, #92400e); }
+
+  .reel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    margin-top: 6px;
+  }
+  .reel-url {
+    font-size: 13px;
+    color: #93c5fd;
+    text-decoration: none;
+    word-break: break-all;
+    flex: 1;
+    min-width: 200px;
+  }
+  .reel-url:hover { text-decoration: underline; }
+  .open-btn {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+    width: auto;
+  }
+  .open-btn:hover { border-color: var(--accent); background: rgba(225,48,108,0.1); }
+
+  .reel-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 10px;
+  }
+  .metric {
+    text-align: center;
+    padding: 8px;
+    background: var(--card-2);
+    border-radius: 8px;
+  }
+  .metric-value { font-size: 16px; font-weight: 700; }
+  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+  .metric-value.highlight { color: var(--ok); }
+
+  .insight-box {
+    background: var(--card-2);
+    border-left: 3px solid var(--accent);
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  th, td {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  tbody tr:hover { background: var(--card-2); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td a { color: #93c5fd; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px; }
+  a { color: #93c5fd; }
+
+  details { margin-top: 12px; }
+  summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 8px 0;
+    user-select: none;
+  }
+  details[open] summary { color: var(--text); }
+
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>📊 Analisis Reel Instagram</h1>
+    <p>Upload CSV / XLSX → Ranking otomatis → Insight dari AI</p>
+  </header>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <h2>1️⃣ Upload File Data</h2>
+    <div class="file-drop" id="fileDrop">
+      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.txt,.tsv" />
+      <div class="file-drop-icon">📁</div>
+      <div class="file-drop-text">
+        <strong>Klik untuk pilih file</strong> atau drag & drop di sini<br>
+        <small>Format yang didukung:</small>
+      </div>
+      <div class="file-drop-formats">
+        <span class="format-badge">CSV</span>
+        <span class="format-badge">XLSX</span>
+        <span class="format-badge">XLS</span>
+        <span class="format-badge">TXT</span>
+        <span class="format-badge">TSV</span>
+      </div>
+    </div>
+    <div class="file-info" id="fileInfo"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card">
+    <h2>2️⃣ Groq API Key (opsional, untuk insight AI)</h2>
+    <div>
+      <label>Groq API Key</label>
+      <input type="password" id="apiKey" placeholder="gsk_..." />
+      <div class="hint">
+        Dapat gratis di <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.
+        Kalau kosong, analisis tetap jalan tapi tanpa insight AI.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <button id="analyzeBtn" disabled>🔍 Analisis Sekarang</button>
+
+  <div style="margin-top: 14px;"></div>
+  <div class="status" id="status"></div>
+
+  <!-- HASIL -->
+  <div class="result" id="result">
+    <div class="card">
+      <h2>📈 Statistik Keseluruhan</h2>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+
+    <div class="section-title">
+      🏆 Top 5 Reel untuk Observasi Manual
+      <span class="badge">KLIK LANGSUNG</span>
+    </div>
+    <div id="top5"></div>
+
+    <div class="card" id="insightCard" style="display:none;">
+      <h2>🧠 Insight dari Groq AI</h2>
+      <div class="insight-box" id="insightBox"></div>
+    </div>
+
+    <details>
+      <summary>📋 Lihat Ranking Lengkap Semua Reel (<span id="totalCount">0</span> Reel)</summary>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>URL Reel</th>
+              <th style="text-align:right;">Views</th>
+              <th style="text-align:right;">Likes</th>
+              <th style="text-align:right;">Comments</th>
+              <th style="text-align:right;">Eng. Rate</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <div style="margin-top: 20px; display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="btn-secondary" id="downloadBtn">💾 Download Hasil JSON</button>
+      <button class="btn-secondary" id="copyTop5Btn">📋 Copy 5 URL Top</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Analisis Reel Instagram • 100% client-side • Data tidak dikirim ke mana pun kecuali Groq (opsional)
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// KONFIG
+// ============================================================
+const GROQ_MODEL = "openai/gpt-oss-120b";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+// ============================================================
+// ELEMEN
+// ============================================================
+const $ = (id) => document.getElementById(id);
+const fileDrop = $("fileDrop");
+const fileInput = $("fileInput");
+const fileInfo = $("fileInfo");
+const apiKeyEl = $("apiKey");
+const analyzeBtn = $("analyzeBtn");
+const statusEl = $("status");
+const resultEl = $("result");
+const statsGrid = $("statsGrid");
+const top5El = $("top5");
+const insightCard = $("insightCard");
+const insightBox = $("insightBox");
+const tableBody = $("tableBody");
+const totalCount = $("totalCount");
+const downloadBtn = $("downloadBtn");
+const copyTop5Btn = $("copyTop5Btn");
+
+// Simpan API key
+const savedKey = localStorage.getItem("groq_api_key");
+if (savedKey) apiKeyEl.value = savedKey;
+apiKeyEl.addEventListener("input", () => {
+  localStorage.setItem("groq_api_key", apiKeyEl.value.trim());
+});
+
+// State
+let parsedData = [];
+let analysisResult = null;
+let currentFileName = "";
+
+// ============================================================
+// HELPER: status
+// ============================================================
+function showStatus(msg, type = "info", spinner = false) {
+  statusEl.className = `status show ${type}`;
+  statusEl.innerHTML = (spinner ? '<span class="spinner"></span>' : "") + msg;
+}
+function hideStatus() {
+  statusEl.className = "status";
+  statusEl.innerHTML = "";
+}
+
+// ============================================================
+// HELPER: parse angka
+// ============================================================
+function parseNumber(val) {
+  if (val === undefined || val === null) return 0;
+
+  if (typeof val === "number") {
+    if (!isFinite(val)) return 0;
+    return Math.round(val);
+  }
+
+  let s = String(val).trim().replace(/,/g, "");
+  if (s === "" || s === "-") return 0;
+
+  const match = s.match(/^([\d.]+)\s*([KMB]?)$/i);
+  if (!match) {
+    const n = parseFloat(s);
+    return isFinite(n) ? Math.round(n) : 0;
+  }
+
+  const num = parseFloat(match[1]);
+  const suffix = match[2].toUpperCase();
+  const multiplier = suffix === "K" ? 1e3 : suffix === "M" ? 1e6 : suffix === "B" ? 1e9 : 1;
+
+  return Math.round(num * multiplier);
+}
+
+// ============================================================
+// HELPER: ekstrak shortcode dari URL / string apapun
+// ============================================================
+function extractShortcode(str) {
+  if (!str) return null;
+  const s = String(str);
+  let m = s.match(/instagram\.com\/[^\/]+\/reel\/([A-Za-z0-9_-]+)/);
+  if (m) return m[1];
+  m = s.match(/instagram\.com\/reel\/([A-Za-z0-9_-]+)/);
+  if (m) return m[1];
+  m = s.match(/instagram\.com\/p\/([A-Za-z0-9_-]+)/);
+  if (m) return m[1];
+  m = s.match(/^([A-Za-z0-9_-]{8,})$/);
+  if (m) return m[1];
+  return null;
+}
+
+// ============================================================
+// PARSE: dari array-of-arrays
+// ============================================================
+function parseRows(rows) {
+  if (!rows || rows.length === 0) return [];
+
+  const results = [];
+  const seen = new Set();
+
+  const firstRow = rows[0].map((c) => String(c || "").toLowerCase().trim());
+  const headerKeywords = ["url", "link", "reel", "shortcode", "views", "likes", "comments", "like", "comment", "view"];
+  const hasHeader = firstRow.some((c) => headerKeywords.includes(c));
+
+  let urlIdx = -1, viewsIdx = -1, likesIdx = -1, commentsIdx = -1;
+  let startRow = 0;
+
+  if (hasHeader) {
+    startRow = 1;
+    firstRow.forEach((c, i) => {
+      if (c.includes("url") || c.includes("link") || c.includes("reel") || c === "shortcode") {
+        if (urlIdx === -1) urlIdx = i;
+      } else if (c.includes("view") || c === "plays") {
+        if (viewsIdx === -1) viewsIdx = i;
+      } else if (c.includes("like")) {
+        if (likesIdx === -1) likesIdx = i;
+      } else if (c.includes("comment")) {
+        if (commentsIdx === -1) commentsIdx = i;
+      }
+    });
+  }
+
+  if (urlIdx !== -1) {
+    for (let i = startRow; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.length === 0) continue;
+
+      const shortcode = extractShortcode(row[urlIdx]);
+      if (!shortcode || seen.has(shortcode)) continue;
+
+      seen.add(shortcode);
+      results.push({
+        shortcode,
+        url: `https://www.instagram.com/reel/${shortcode}/`,
+        likes: likesIdx !== -1 ? parseNumber(row[likesIdx]) : 0,
+        comments: commentsIdx !== -1 ? parseNumber(row[commentsIdx]) : 0,
+        views: viewsIdx !== -1 ? parseNumber(row[viewsIdx]) : 0,
+      });
+    }
+  } else {
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.length === 0) continue;
+
+      for (let j = 0; j < row.length; j++) {
+        const cell = row[j];
+        if (cell === undefined || cell === null) continue;
+
+        const shortcode = extractShortcode(cell);
+        if (!shortcode || seen.has(shortcode)) continue;
+
+        const likes = parseNumber(row[j + 1]);
+        const comments = parseNumber(row[j + 2]);
+        const views = parseNumber(row[j + 3]);
+
+        if (likes === 0 && comments === 0 && views === 0) continue;
+
+        seen.add(shortcode);
+        results.push({
+          shortcode,
+          url: `https://www.instagram.com/reel/${shortcode}/`,
+          likes,
+          comments,
+          views,
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
+// ============================================================
+// HANDLE FILE
+// ============================================================
+fileDrop.addEventListener("click", () => fileInput.click());
+
+fileDrop.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  fileDrop.classList.add("dragover");
+});
+fileDrop.addEventListener("dragleave", () => {
+  fileDrop.classList.remove("dragover");
+});
+fileDrop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  fileDrop.classList.remove("dragover");
+  if (e.dataTransfer.files.length > 0) {
+    handleFile(e.dataTransfer.files[0]);
+  }
+});
+
+fileInput.addEventListener("change", (e) => {
+  if (e.target.files.length > 0) {
+    handleFile(e.target.files[0]);
+  }
+});
+
+function handleFile(file) {
+  currentFileName = file.name;
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    try {
+      let rows = [];
+
+      if (ext === "xlsx" || ext === "xls") {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
+      } else {
+        const text = e.target.result;
+        const workbook = XLSX.read(text, { type: "string", raw: false });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
+      }
+
+      parsedData = parseRows(rows);
+
+      if (parsedData.length === 0) {
+        fileInfo.className = "file-info show";
+        fileInfo.style.background = "rgba(239,68,68,0.1)";
+        fileInfo.style.borderColor = "rgba(239,68,68,0.3)";
+        fileInfo.style.color = "#fca5a5";
+        fileInfo.textContent = `❌ Tidak ada data Reel yang terdeteksi di "${file.name}".`;
+        analyzeBtn.disabled = true;
+        return;
+      }
+
+      fileInfo.className = "file-info show";
+      fileInfo.style.background = "";
+      fileInfo.style.borderColor = "";
+      fileInfo.style.color = "";
+      fileInfo.textContent = `✅ Berhasil membaca ${parsedData.length} Reel dari "${file.name}"`;
+      analyzeBtn.disabled = false;
+    } catch (err) {
+      console.error(err);
+      fileInfo.className = "file-info show";
+      fileInfo.style.background = "rgba(239,68,68,0.1)";
+      fileInfo.style.borderColor = "rgba(239,68,68,0.3)";
+      fileInfo.style.color = "#fca5a5";
+      fileInfo.textContent = `❌ Gagal membaca file: ${err.message}`;
+      analyzeBtn.disabled = true;
+    }
+  };
+
+  if (ext === "xlsx" || ext === "xls") {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file);
+  }
+}
+
+// ============================================================
+// ANALISIS
+// ============================================================
+function analyzeData(data) {
+  const enriched = data.map((d) => {
+    const totalEngagement = d.likes + d.comments;
+    const engRate = d.views > 0 ? (totalEngagement / d.views) * 100 : 0;
+    const score = d.views * (1 + engRate / 100);
+    return { ...d, totalEngagement, engRate: +engRate.toFixed(2), score };
+  });
+
+  enriched.sort((a, b) => b.score - a.score);
+
+  const totalViews = enriched.reduce((s, d) => s + d.views, 0);
+  const totalLikes = enriched.reduce((s, d) => s + d.likes, 0);
+  const totalComments = enriched.reduce((s, d) => s + d.comments, 0);
+  const avgViews = totalViews / enriched.length;
+  const avgEngRate = enriched.reduce((s, d) => s + d.engRate, 0) / enriched.length;
+
+  return {
+    reels: enriched,
+    stats: {
+      total: enriched.length,
+      totalViews,
+      totalLikes,
+      totalComments,
+      avgViews: Math.round(avgViews),
+      avgEngRate: +avgEngRate.toFixed(2),
+      topViews: enriched[0]?.views || 0,
+      topEngRate: Math.max(...enriched.map((d) => d.engRate)),
+    },
+  };
+}
+
+// ============================================================
+// FORMAT ANGKA
+// ============================================================
+function formatNum(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + "B";
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + "K";
+  return String(n);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderStats(stats) {
+  const items = [
+    { label: "Total Reel", value: stats.total },
+    { label: "Total Views", value: formatNum(stats.totalViews) },
+    { label: "Total Likes", value: formatNum(stats.totalLikes) },
+    { label: "Total Komentar", value: formatNum(stats.totalComments) },
+    { label: "Rata-rata Views", value: formatNum(stats.avgViews) },
+    { label: "Rata-rata Eng. Rate", value: stats.avgEngRate + "%" },
+  ];
+
+  statsGrid.innerHTML = items
+    .map(
+      (it) => `
+      <div class="stat-box">
+        <div class="stat-value">${it.value}</div>
+        <div class="stat-label">${it.label}</div>
+      </div>`
+    )
+    .join("");
+}
+
+function renderTop5(reels) {
+  const top5 = reels.slice(0, 5);
+  const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
+
+  top5El.innerHTML = top5
+    .map((r, i) => {
+      const rankClass = i === 0 ? "top-1" : i === 1 ? "top-2" : i === 2 ? "top-3" : "";
+      const badgeClass = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
+      return `
+        <div class="reel-card ${rankClass}">
+          <span class="rank-badge ${badgeClass}">${medals[i]} RANK #${i + 1}</span>
+          <div class="reel-header">
+            <a href="${r.url}" target="_blank" rel="noopener" class="reel-url">${r.url}</a>
+            <a href="${r.url}" target="_blank" rel="noopener" class="open-btn">🔗 Buka di Instagram</a>
+          </div>
+          <div class="reel-metrics">
+            <div class="metric">
+              <div class="metric-value">${formatNum(r.views)}</div>
+              <div class="metric-label">Views</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">${formatNum(r.likes)}</div>
+              <div class="metric-label">Likes</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">${formatNum(r.comments)}</div>
+              <div class="metric-label">Komentar</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value highlight">${r.engRate}%</div>
+              <div class="metric-label">Eng. Rate</div>
+            </div>
+          </div>
+        </div>`;
+    })
+    .join("");
+}
+
+function renderTable(reels) {
+  totalCount.textContent = reels.length;
+  tableBody.innerHTML = reels
+    .map(
+      (r, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><a href="${r.url}" target="_blank" rel="noopener">${r.shortcode}</a></td>
+        <td class="num">${formatNum(r.views)}</td>
+        <td class="num">${formatNum(r.likes)}</td>
+        <td class="num">${formatNum(r.comments)}</td>
+        <td class="num">${r.engRate}%</td>
+      </tr>`
+    )
+    .join("");
+}
+
+// ============================================================
+// GROQ INSIGHT
+// ============================================================
+async function getGroqInsight(apiKey, analysis) {
+  const top5 = analysis.reels.slice(0, 5);
+  const bottom5 = analysis.reels.slice(-5);
+
+  const formatReel = (r) =>
+    `- ${r.shortcode}: views ${formatNum(r.views)}, likes ${formatNum(r.likes)}, comments ${formatNum(r.comments)}, eng.rate ${r.engRate}%`;
+
+  const prompt = `Kamu adalah analis konten Instagram profesional.
+
+Saya punya data scrape dari satu akun Instagram. Total ${analysis.stats.total} Reel.
+
+STATISTIK KESELURUHAN:
+- Total views: ${formatNum(analysis.stats.totalViews)}
+- Total likes: ${formatNum(analysis.stats.totalLikes)}
+- Rata-rata views: ${formatNum(analysis.stats.avgViews)}
+- Rata-rata engagement rate: ${analysis.stats.avgEngRate}%
+
+TOP 5 REEL (performa terbaik):
+${top5.map(formatReel).join("\n")}
+
+BOTTOM 5 REEL (performa terlemah):
+${bottom5.map(formatReel).join("\n")}
+
+TUGAS:
+Berikan analisis dalam Bahasa Indonesia, dengan format:
+
+1. **Pola Konten Terbaik**: Apa yang membuat 5 Reel teratas berhasil?
+
+2. **Rekomendasi Formula**: Berdasarkan data ini, formula konten seperti apa yang sebaiknya direplikasi?
+
+3. **Yang Harus Dihindari**: Apa pola dari 5 Reel terbawah?
+
+4. **Prediksi Konten Selanjutnya**: 3 ide konten konkret yang kemungkinan akan performa baik.
+
+5. **Catatan Penting**: Data ini TIDAK memuat caption/hashtag asli. Sarankan 3 hal konkret yang user perlu cek manual di Reel teratas.
+
+Balas dalam Bahasa Indonesia, ringkas, maksimal 500 kata.`;
+
+  const response = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: "Kamu adalah analis konten Instagram. Jawab dalam Bahasa Indonesia, ringkas, praktis.",
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!response.ok) {
+    let errMsg = `HTTP ${response.status}`;
+    try {
+      const err = await response.json();
+      errMsg = err?.error?.message || errMsg;
+    } catch (_) {}
+    throw new Error(errMsg);
+  }
+
+  const data = await response.json();
+  return data?.choices?.[0]?.message?.content || "(tidak ada balasan)";
+}
+
+// ============================================================
+// EVENT: ANALYZE
+// ============================================================
+analyzeBtn.addEventListener("click", async () => {
+  if (parsedData.length === 0) {
+    showStatus("❌ Tidak ada data untuk dianalisis.", "err");
+    return;
+  }
+
+  analyzeBtn.disabled = true;
+  resultEl.classList.remove("show");
+  insightCard.style.display = "none";
+  showStatus("Menganalisis data...", "info", true);
+
+  try {
+    analysisResult = analyzeData(parsedData);
+
+    renderStats(analysisResult.stats);
+    renderTop5(analysisResult.reels);
+    renderTable(analysisResult.reels);
+    resultEl.classList.add("show");
+
+    const apiKey = apiKeyEl.value.trim();
+    if (apiKey && apiKey.startsWith("gsk_")) {
+      showStatus("Meminta insight dari Groq AI...", "info", true);
+      try {
+        const insight = await getGroqInsight(apiKey, analysisResult);
+        insightBox.textContent = insight;
+        insightCard.style.display = "block";
+        showStatus("✅ Selesai! Analisis + insight AI siap.", "ok");
+      } catch (err) {
+        console.error(err);
+        showStatus("⚠️ Analisis lokal selesai, tapi insight AI gagal: " + err.message, "err");
+      }
+    } else {
+      showStatus("✅ Analisis selesai! (Isi Groq API key untuk dapat insight AI)", "ok");
+    }
+
+    setTimeout(() => hideStatus(), 5000);
+  } catch (err) {
+    console.error(err);
+    showStatus("❌ " + (err.message || "Terjadi kesalahan."), "err");
+  } finally {
+    analyzeBtn.disabled = false;
+  }
+});
+
+// ============================================================
+// DOWNLOAD JSON
+// ============================================================
+downloadBtn.addEventListener("click", () => {
+  if (!analysisResult) return;
+  const output = {
+    file_name: currentFileName,
+    analyzed_at: new Date().toISOString(),
+    stats: analysisResult.stats,
+    reels: analysisResult.reels,
+  };
+  const blob = new Blob([JSON.stringify(output, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  a.href = url;
+  a.download = `analisis_reel_${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ============================================================
+// COPY TOP 5
+// ============================================================
+copyTop5Btn.addEventListener("click", () => {
+  if (!analysisResult) return;
+  const top5 = analysisResult.reels.slice(0, 5);
+  const text = top5
+    .map(
+      (r, i) =>
+        `#${i + 1} (${formatNum(r.views)} views, ${formatNum(r.likes)} likes, ${r.engRate}% ER)\n${r.url}`
+    )
+    .join("\n\n");
+
+  navigator.clipboard.writeText(text).then(() => {
+    const original = copyTop5Btn.textContent;
+    copyTop5Btn.textContent = "✓ Tersalin!";
+    setTimeout(() => (copyTop5Btn.textContent = original), 1500);
+  });
+});
+</script>
+</body>
+</html>23y.
